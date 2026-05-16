@@ -11,10 +11,12 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import AdminPage from '@/pages/AdminPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AdminRoute } from './AdminRoute'
+import { Navbar } from '@/components/Navbar'
 
 const AppRouter = () => {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         {/* Públicas */}
         <Route path="/" element={<HomePage />} />

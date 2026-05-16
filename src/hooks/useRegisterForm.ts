@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
+import { handleError } from "../utils/handleError";
 
 type FormState = { name: string; email: string; password: string; confirmPassword: string };
 type FormErrors = Partial<FormState>;
@@ -15,15 +16,6 @@ function validate(form: FormState): FormErrors {
     if (!form.confirmPassword) errors.confirmPassword = "Confirmá tu contraseña";
     else if (form.confirmPassword !== form.password) errors.confirmPassword = "Las contraseñas no coinciden";
     return errors;
-}
-
-function getFirebaseErrorMessage(err: unknown): string {
-    if (err && typeof err === "object" && "code" in err) {
-        const code = (err as { code: string }).code;
-        if (code === "auth/email-already-in-use") return "Ya existe una cuenta con ese email";
-        if (code === "auth/too-many-requests") return "Demasiados intentos. Intentá más tarde";
-    }
-    return "Ocurrió un error. Intentá de nuevo";
 }
 
 export function useRegisterForm() {
@@ -54,7 +46,7 @@ export function useRegisterForm() {
             await register(form.email, form.password);
             navigate("/");
         } catch (err) {
-            setFirebaseError(getFirebaseErrorMessage(err));
+            setFirebaseError(handleError(err).message);
         } finally {
             setIsSubmitting(false);
         }
@@ -65,7 +57,7 @@ export function useRegisterForm() {
             await loginWithGoogle();
             navigate("/");
         } catch (err) {
-            setFirebaseError(getFirebaseErrorMessage(err));
+            setFirebaseError(handleError(err).message);
         }
     };
 

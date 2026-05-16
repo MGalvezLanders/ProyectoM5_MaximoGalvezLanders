@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
+import { handleError } from "../utils/handleError";
 
 type FormState = { email: string; password: string };
 type FormErrors = Partial<FormState>;
@@ -12,16 +13,6 @@ function validate(form: FormState): FormErrors {
     if (!form.password) errors.password = "La contraseña es requerida";
     else if (form.password.length < 6) errors.password = "Mínimo 6 caracteres";
     return errors;
-}
-
-function getFirebaseErrorMessage(err: unknown): string {
-    if (err && typeof err === "object" && "code" in err) {
-        const code = (err as { code: string }).code;
-        if (code === "auth/invalid-credential") return "Email o contraseña incorrectos";
-        if (code === "auth/too-many-requests") return "Demasiados intentos. Intentá más tarde";
-        if (code === "auth/user-disabled") return "Esta cuenta fue deshabilitada";
-    }
-    return "Ocurrió un error. Intentá de nuevo";
 }
 
 export function useLoginForm() {
@@ -52,7 +43,7 @@ export function useLoginForm() {
             await login(form.email, form.password);
             navigate("/");
         } catch (err) {
-            setFirebaseError(getFirebaseErrorMessage(err));
+            setFirebaseError(handleError(err).message);
         } finally {
             setIsSubmitting(false);
         }
@@ -63,7 +54,7 @@ export function useLoginForm() {
             await loginWithGoogle();
             navigate("/");
         } catch (err) {
-            setFirebaseError(getFirebaseErrorMessage(err));
+            setFirebaseError(handleError(err).message);
         }
     };
 

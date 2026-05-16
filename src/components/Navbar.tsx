@@ -13,7 +13,7 @@ export function Navbar() {
     return (
         <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
             <Link to="/" className="text-lg font-bold text-blue-600">
-                MiTienda
+                La Gauchada Mates
             </Link>
 
             <div className="flex items-center gap-4">
