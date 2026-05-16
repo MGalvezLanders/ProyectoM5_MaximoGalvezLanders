@@ -3,9 +3,8 @@ import type { User as FirebaseUser } from "firebase/auth";
 import { onAuthChange, login, register, loginWithGoogle, logout } from "../services/auth";
 import { getUserProfile } from "../services/users";
 import type { UserRole } from "../types/user";
-import { useAuth } from "@/hooks/useAuth";
 
-type UserProfile = { 
+type UserProfile = {
     name: string;
     email: string;
     role: UserRole;
@@ -30,9 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const unsubscribe = onAuthChange(async (firebaseUser) => {
+            setLoading(true);
             setUser(firebaseUser);
             if (firebaseUser) {
-                // loading permanece true hasta tener el perfil con el rol
                 const data = await getUserProfile(firebaseUser.uid);
                 setProfile(data as UserProfile | null);
             } else {
@@ -74,5 +73,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         </AuthContext.Provider>
     );
 }
-
-useAuth();
