@@ -8,7 +8,6 @@ export type User = {
     createdAt: Timestamp;
 };
 
-export type UserRole = User & {
-    role: "admin" | "customer";
-};
+export type UserRole = "admin" | "customer";
+
 
