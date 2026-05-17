@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { useRegisterForm } from "@/hooks/useRegisterForm";
-import { FormField } from "@/components/login/register/FormField";
-import { GoogleSignInButton } from "@/components/login/register/GoogleSignInButton";
+import { FormField } from "@/components/login-register/FormField";
+import { GoogleSignInButton } from "@/components/login-register/GoogleSignInButton";
+import { Button } from "@/components/ui/Button";
+import { SolDeMayo } from "@/components/ui/SolDeMayo";
 
 export default function RegisterPage() {
   const {
@@ -16,88 +18,99 @@ export default function RegisterPage() {
   } = useRegisterForm();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Crear cuenta</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Completá tus datos para registrarte
-        </p>
+    <div className="paper-texture min-h-[calc(100vh-65px)] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-6">
+          <SolDeMayo className="w-12 h-12 text-sun-500" />
+        </div>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <FormField
-            id="name"
-            name="name"
-            label="Nombre"
-            type="text"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Tu nombre"
-            autoComplete="name"
-            error={errors.name}
-          />
-          <FormField
-            id="email"
-            name="email"
-            label="Email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="tu@email.com"
-            autoComplete="email"
-            error={errors.email}
-          />
-          <FormField
-            id="password"
-            name="password"
-            label="Contraseña"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            error={errors.password}
-          />
-          <FormField
-            id="confirmPassword"
-            name="confirmPassword"
-            label="Confirmar contraseña"
-            type="password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            error={errors.confirmPassword}
-          />
+        <div className="bg-cream-50 border border-sepia-300 rounded-2xl shadow-warm p-8">
+          <h1 className="font-display text-3xl font-bold text-leather-900 mb-1 text-center">
+            Sumate al fogón
+          </h1>
+          <p className="text-sm text-leather-600 mb-6 text-center">
+            Creá tu cuenta y empezá a cebar
+          </p>
 
-          {firebaseError && (
-            <p className="mb-4 text-sm text-red-600 text-center" role="alert">
-              {firebaseError}
-            </p>
-          )}
+          <form onSubmit={handleSubmit} noValidate>
+            <FormField
+              id="name"
+              name="name"
+              label="Nombre"
+              type="text"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Tu nombre"
+              autoComplete="name"
+              error={errors.name}
+            />
+            <FormField
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="tu@email.com"
+              autoComplete="email"
+              error={errors.email}
+            />
+            <FormField
+              id="password"
+              name="password"
+              label="Contraseña"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              autoComplete="new-password"
+              error={errors.password}
+            />
+            <FormField
+              id="confirmPassword"
+              name="confirmPassword"
+              label="Confirmar contraseña"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder="••••••••"
+              autoComplete="new-password"
+              error={errors.confirmPassword}
+            />
 
-          <button
-            type="submit"
-            disabled={isSubmitting || isFormInvalid}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {isSubmitting ? "Registrando..." : "Crear cuenta"}
-          </button>
+            {firebaseError && (
+              <p
+                className="mb-4 text-sm text-terracota-500 text-center"
+                role="alert"
+              >
+                {firebaseError}
+              </p>
+            )}
 
-          <GoogleSignInButton
-            onClick={handleGoogleSignIn}
-            disabled={isSubmitting}
-          />
-        </form>
+            <Button
+              type="submit"
+              fullWidth
+              disabled={isSubmitting || isFormInvalid}
+            >
+              {isSubmitting ? "Registrando..." : "Crear cuenta"}
+            </Button>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          ¿Ya tenés cuenta?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 hover:underline font-medium"
-          >
-            Iniciar sesión
-          </Link>
-        </p>
+            <GoogleSignInButton
+              onClick={handleGoogleSignIn}
+              disabled={isSubmitting}
+            />
+          </form>
+
+          <p className="mt-6 text-center text-sm text-leather-700">
+            ¿Ya tenés cuenta?{" "}
+            <Link
+              to="/login"
+              className="text-leather-900 font-semibold hover:text-sun-600 underline decoration-sun-500 underline-offset-2"
+            >
+              Iniciar sesión
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
