@@ -1,1 +1,85 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+@theme {
+  /* Paleta: cuero rústico + acentos patrios */
+  --color-cream-50:  #FAF6EF;   /* fondo papel */
+  --color-cream-100: #F5EFE2;   /* superficies suaves */
+  --color-cream-200: #EBE0C8;   /* superficies hover */
+  --color-sepia-300: #D6C7A8;   /* bordes */
+  --color-sepia-400: #B89F73;   /* bordes fuertes */
+
+  --color-leather-500: #8B5A2B; /* marrón cuero medio */
+  --color-leather-600: #6B4423; /* primario */
+  --color-leather-700: #4E3119; /* hover primario */
+  --color-leather-900: #3D2817; /* texto principal */
+
+  --color-sky-arg-300: #B5D4EE; /* celeste claro */
+  --color-sky-arg-500: #74ACDF; /* celeste argentino */
+  --color-sky-arg-700: #3D7AB5; /* hover celeste */
+
+  --color-sun-400: #F4C56E;     /* sol claro */
+  --color-sun-500: #E8A93C;     /* sol de mayo */
+  --color-sun-600: #C68A20;     /* hover sol */
+
+  --color-terracota-500: #C84B2E; /* error/destructivo */
+  --color-field-500: #7A8F4E;     /* éxito */
+
+  /* Tipografías */
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Sombras cálidas */
+  --shadow-warm-sm: 0 1px 2px 0 rgb(61 40 23 / 0.08);
+  --shadow-warm: 0 4px 12px -2px rgb(61 40 23 / 0.12), 0 2px 4px -2px rgb(61 40 23 / 0.06);
+  --shadow-warm-lg: 0 12px 28px -6px rgb(61 40 23 / 0.18), 0 4px 8px -4px rgb(61 40 23 / 0.08);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+html,
+body {
+  background-color: var(--color-cream-50);
+  color: var(--color-leather-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--color-leather-900);
+  letter-spacing: -0.01em;
+}
+
+/* Selección de texto en tono cálido */
+::selection {
+  background-color: var(--color-sun-400);
+  color: var(--color-leather-900);
+}
+
+/* Scrollbar sutil */
+* {
+  scrollbar-color: var(--color-sepia-400) var(--color-cream-100);
+  scrollbar-width: thin;
+}
+
+/* ── Utilities decorativas ──────────────────────────────────────────────── */
+@utility band-argentina {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-sky-arg-500) 0%,
+    var(--color-sky-arg-500) 33%,
+    #ffffff 33%,
+    #ffffff 67%,
+    var(--color-sky-arg-500) 67%,
+    var(--color-sky-arg-500) 100%
+  );
+}
+
+@utility paper-texture {
+  background-color: var(--color-cream-50);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgb(107 68 35 / 0.025) 0, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgb(107 68 35 / 0.025) 0, transparent 50%);
+}
