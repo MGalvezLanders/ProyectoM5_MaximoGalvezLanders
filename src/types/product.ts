@@ -1,13 +1,12 @@
 import { Timestamp } from "firebase/firestore";
 
-export type Products = {
-id: string;
-name: String;
-description: string;
-price:number;
-categoria?: string;
-imgeUrl: string;
-stock?: number;
-createdAt: Timestamp;
-}
-
+export type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  stock: number;
+  createdAt: Timestamp;
+};

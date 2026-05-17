@@ -1,6 +1,6 @@
-import type { Products } from "./product";
+import type { Product } from "./product";
 
-export type CartItem = Products & {
+export type CartItem = Product & {
   quantity: number;
 };
 
@@ -9,18 +9,18 @@ export type CartState = {
 };
 
 export type CartAction =
-  | { 
-    type: "ADD_TO_CART";
-    payload: Products;
+  | {
+      type: "ADD_TO_CART";
+      payload: Product;
     }
   | {
-     type: "REMOVE_FROM_CART"; 
-     payload: number;
+      type: "REMOVE_FROM_CART";
+      payload: string;
     }
-  | { 
-    type: "UPDATE_QUANTITY"; 
-    payload: { id: string; quantity: number } 
+  | {
+      type: "UPDATE_QUANTITY";
+      payload: { id: string; quantity: number };
     }
-  | { 
-    type: "CLEAR_CART" 
+  | {
+      type: "CLEAR_CART";
     };
