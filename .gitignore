@@ -15,6 +15,13 @@ dist-ssr
 PLAN.md
 ses-sender_accessKeys.csv
 
+# Firebase Admin (NUNCA commitear)
+firebase-service-account.json
+
+# Seed assets locales (las imágenes no van al repo, sí el README)
+scripts/seed-assets/**
+!scripts/seed-assets/README.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

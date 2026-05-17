@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── users ────────────────────────────────────────────────────────────
+    // Solo el propio usuario puede leer/escribir su doc.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // ─── products ─────────────────────────────────────────────────────────
+    // Lectura pública (catálogo). Escritura solo admin.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── orders ───────────────────────────────────────────────────────────
+    // Placeholder — se completa en Etapa 5.
+    match /orders/{orderId} {
+      allow read: if isSignedIn()
+        && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
