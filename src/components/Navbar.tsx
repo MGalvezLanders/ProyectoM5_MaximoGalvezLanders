@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 
+
 export function Navbar() {
   const { user, profile, logout } = useAuth();
+  const { state: cartState } = useCart();
+  const cartCount = cartState.items.reduce((acc: number, item: { quantity: number }) => acc + item.quantity, 0);
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +70,11 @@ export function Navbar() {
                 </NavLink>
                 <NavLink to="/cart" className={desktopLinkClass}>
                   Carrito
+                  {cartCount > 0 && (
+                    <span className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900">
+                      {cartCount}
+                    </span>
+                  )}
                 </NavLink>
                 <NavLink to="/orders" className={desktopLinkClass}>
                   Mis pedidos
@@ -161,6 +170,11 @@ export function Navbar() {
                 </NavLink>
                 <NavLink to="/cart" className={mobileLinkClass}>
                   Carrito
+                  {cartCount > 0 && (
+                    <span className="ml-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900">
+                      {cartCount}
+                    </span>
+                  )}
                 </NavLink>
                 <NavLink to="/orders" className={mobileLinkClass}>
                   Mis pedidos
