@@ -14,6 +14,7 @@ dist-ssr
 .env
 PLAN.md
 ses-sender_accessKeys.csv
+firebase-service-account.json
 
 # Editor directories and files
 .vscode/*
