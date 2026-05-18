@@ -12,7 +12,6 @@ import {
   type CartState,
 } from "./cartReducer";
 import { useAuth } from "../../hooks/useAuth";
-import { useDebounce } from "../../hooks/useDebounce";
 import { useFirestoreError } from "../../hooks/errors/useFirestoreError";
 import { getCart, saveCart } from "../../services/cart";
 import type { Product } from "../../types/product";
@@ -49,7 +48,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearError();
       })
       .catch((err) => {
-        if (!cancelled) captureError(err);
+        if (cancelled) return;
+        console.error("[CartContext] Error cargando carrito:", err);
+        captureError(err);
       })
       .finally(() => {
         if (!cancelled) isHydratedRef.current = true;
@@ -59,11 +60,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [user, captureError, clearError]);
 
-  const debouncedItems = useDebounce(state.items, 500);
   useEffect(() => {
     if (!isHydratedRef.current || !user) return;
-    saveCart(user.uid, debouncedItems).catch(captureError);
-  }, [debouncedItems, user, captureError]);
+    saveCart(user.uid, state.items).catch((err) => {
+      console.error("[CartContext] Error guardando carrito:", err);
+      captureError(err);
+    });
+  }, [state.items, user, captureError]);
 
   const addItem = useCallback((product: Product, quantity?: number) => {
     dispatch({ type: "ADD_ITEM", payload: { product, quantity } });

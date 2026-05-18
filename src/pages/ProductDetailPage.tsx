@@ -8,6 +8,7 @@ import { QuantityInput } from "@/components/ui/QuantityInput";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useProduct } from "@/hooks/useProduct";
+import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/types/product";
 
 const formatPrice = (price: number) =>
@@ -84,16 +85,15 @@ const ProductDetailPage = () => {
 
 function ProductDetailContent({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
+  const { addItem } = useCart();
   const stockBadge = getStockBadge(product.stock);
   const outOfStock = product.stock === 0;
 
   const handleAddToCart = () => {
-    // Placeholder hasta etapa 4 (CartContext)
-    console.info("[ProductDetail] Agregar al carrito:", {
-      productId: product.id,
-      quantity,
-    });
-    alert(`Agregado al carrito: ${quantity} × ${product.name}`);
+    addItem(product, quantity);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1500);
   };
 
   return (
@@ -172,10 +172,14 @@ function ProductDetailContent({ product }: { product: Product }) {
           <Button
             size="lg"
             fullWidth
-            disabled={outOfStock}
+            disabled={outOfStock || justAdded}
             onClick={handleAddToCart}
           >
-            {outOfStock ? "Sin stock" : "Agregar al carrito"}
+            {outOfStock
+              ? "Sin stock"
+              : justAdded
+                ? "✓ Agregado al carrito"
+                : "Agregar al carrito"}
           </Button>
 
           <p className="mt-4 text-xs text-leather-500 text-center">

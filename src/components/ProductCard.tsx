@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/types/product";
 
 type ProductCardProps = {
@@ -15,7 +17,15 @@ const formatPrice = (price: number) =>
   }).format(price);
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { addItem } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
   const outOfStock = product.stock === 0;
+
+  const handleAdd = () => {
+    addItem(product);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1500);
+  };
 
   return (
     <article className="group bg-cream-50 border border-sepia-300 rounded-xl overflow-hidden shadow-warm-sm hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-200">
@@ -60,8 +70,12 @@ export function ProductCard({ product }: ProductCardProps) {
               {formatPrice(product.price)}
             </span>
           </div>
-          <Button size="sm" disabled={outOfStock}>
-            Agregar
+          <Button
+            size="sm"
+            disabled={outOfStock || justAdded}
+            onClick={handleAdd}
+          >
+            {justAdded ? "Agregado" : "Agregar"}
           </Button>
         </div>
       </div>

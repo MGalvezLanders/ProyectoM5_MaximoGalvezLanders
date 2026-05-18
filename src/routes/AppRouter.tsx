@@ -18,7 +18,7 @@ import { AdminRoute } from "./AdminRoute";
 import { Navbar } from "@/components/Navbar";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ProductsProvider } from "@/context/ProductsContext";
-import { CartProvider } from "@/contexts/cart/CartContext";
+import { CartProvider } from "@/context/cart/CartContext";
 
 const AppRouter = () => {
   return (
