@@ -1,9 +1,13 @@
 import {
+  addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -12,6 +16,15 @@ import type { Product } from "../types/product";
 export type ProductFilters = {
   category?: string;
   search?: string;
+};
+
+export type ProductInput = {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  stock: number;
 };
 
 const productsCollection = collection(db, "products");
@@ -65,4 +78,23 @@ export const getCategories = async (): Promise<string[]> => {
     }
   }
   return Array.from(categories).sort();
+};
+
+export const createProduct = async (input: ProductInput): Promise<string> => {
+  const ref = await addDoc(productsCollection, {
+    ...input,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+export const updateProduct = async (
+  id: string,
+  input: Partial<ProductInput>,
+): Promise<void> => {
+  await updateDoc(doc(db, "products", id), input);
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  await deleteDoc(doc(db, "products", id));
 };
