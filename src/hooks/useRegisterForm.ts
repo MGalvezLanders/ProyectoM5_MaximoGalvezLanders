@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
-import { handleError } from "../utils/handleError";
+import { useAuthError } from "./errors/useAuthError";
 
 type FormState = { name: string; email: string; password: string; confirmPassword: string };
 type FormErrors = Partial<FormState>;
@@ -21,17 +21,17 @@ function validate(form: FormState): FormErrors {
 export function useRegisterForm() {
     const { register, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
+    const { error: firebaseError, captureError, clearError } = useAuthError();
 
     const [form, setForm] = useState<FormState>({ name: "", email: "", password: "", confirmPassword: "" });
     const [errors, setErrors] = useState<FormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [firebaseError, setFirebaseError] = useState<string | null>(null);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const updated = { ...form, [e.target.name]: e.target.value };
         setForm(updated);
         setErrors(validate(updated));
-        setFirebaseError(null);
+        clearError();
     };
 
     const handleSubmit = async (e: FormEvent) => {
@@ -46,7 +46,7 @@ export function useRegisterForm() {
             await register(form.email, form.password, form.name);
             navigate("/");
         } catch (err) {
-            setFirebaseError(handleError(err).message);
+            captureError(err);
         } finally {
             setIsSubmitting(false);
         }
@@ -57,7 +57,7 @@ export function useRegisterForm() {
             await loginWithGoogle();
             navigate("/");
         } catch (err) {
-            setFirebaseError(handleError(err).message);
+            captureError(err);
         }
     };
 
