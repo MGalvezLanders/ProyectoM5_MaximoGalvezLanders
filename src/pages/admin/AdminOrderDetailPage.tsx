@@ -139,6 +139,12 @@ export default function AdminOrderDetailPage() {
         </h3>
         <dl className="text-sm space-y-1">
           <div className="flex gap-2">
+            <dt className="text-leather-500 w-24">Nombre:</dt>
+            <dd className="text-leather-900">
+              {order.shippingInfo?.name ?? "—"}
+            </dd>
+          </div>
+          <div className="flex gap-2">
             <dt className="text-leather-500 w-24">Dirección:</dt>
             <dd className="text-leather-900">
               {order.shippingInfo?.address ?? "—"}
@@ -154,23 +160,31 @@ export default function AdminOrderDetailPage() {
       </section>
 
       <section className="bg-cream-100/60 border border-sepia-300 rounded-xl p-4">
-        <h3 className="font-display text-lg font-semibold mb-3">Producto</h3>
-        <div className="flex items-center gap-4">
-          {order.imageUrl && (
-            <img
-              src={order.imageUrl}
-              alt=""
-              className="w-16 h-16 rounded-lg object-cover border border-sepia-300"
-            />
-          )}
-          <div>
-            <p className="font-medium text-leather-900">{order.name}</p>
-            <p className="text-sm text-leather-600">
-              Cantidad: {order.quantity} · Subtotal:{" "}
-              {formatPrice(order.price * order.quantity)}
-            </p>
-          </div>
-        </div>
+        <h3 className="font-display text-lg font-semibold mb-3">
+          Productos ({order.items.length})
+        </h3>
+        <ul className="divide-y divide-sepia-300/60">
+          {order.items.map((item) => (
+            <li key={item.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  className="w-16 h-16 rounded-lg object-cover border border-sepia-300 flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-leather-900 truncate">{item.name}</p>
+                <p className="text-sm text-leather-600">
+                  {item.quantity} × {formatPrice(item.price)}
+                </p>
+              </div>
+              <p className="font-medium tabular-nums text-leather-900">
+                {formatPrice(item.price * item.quantity)}
+              </p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="bg-cream-50 border border-sepia-300 rounded-xl p-4">

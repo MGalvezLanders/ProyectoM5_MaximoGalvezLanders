@@ -6,7 +6,9 @@ import CatalogPage from "@/pages/CatalogPage";
 import ProductDetailPage from "@/pages/ProductDetailPage";
 import ProfilePage from "@/pages/ProfilePage";
 import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
 import OrdersPage from "@/pages/OrdersPage";
+import OrderDetailPage from "@/pages/OrderDetailPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import AdminPage from "@/pages/AdminPage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
@@ -38,7 +40,9 @@ const AppRouter = () => {
             <Route element={<ProtectedRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/orders/:id" element={<OrderDetailPage />} />
             </Route>
 
             {/* Admin: requieren role === 'admin' */}

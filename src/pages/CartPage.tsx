@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +15,7 @@ const formatPrice = (price: number) =>
 
 export default function CartPage() {
   const { state, updateQuantity, removeItem, clear, error } = useCart();
+  const navigate = useNavigate();
   const { items } = state;
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -139,7 +140,9 @@ export default function CartPage() {
                 </dd>
               </div>
             </dl>
-            <Button fullWidth>Finalizar compra</Button>
+            <Button fullWidth onClick={() => navigate("/checkout")}>
+              Finalizar compra
+            </Button>
             <button
               type="button"
               onClick={clear}

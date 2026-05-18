@@ -1,15 +1,34 @@
-import type { Product } from "./product";
+import { Timestamp } from "firebase/firestore";
 
 export type OrderStatus = "pending" | "shipped" | "delivered" | "cancelled";
 
-export type Order = Product & {
+export type OrderItem = {
+  id: string;
+  name: string;
+  price: number;
   quantity: number;
-  totalPrice: number;
-  orderDate: Date;
+  imageUrl: string;
+};
+
+export type ShippingInfo = {
+  name: string;
+  address: string;
+  city: string;
+};
+
+export type Order = {
+  id: string;
   userId: string;
+  items: OrderItem[];
+  totalPrice: number;
   status: OrderStatus;
-  shippingInfo: {
-    address: string;
-    city: string;
-  };
+  orderDate: Timestamp;
+  shippingInfo: ShippingInfo;
+};
+
+export type OrderInput = {
+  userId: string;
+  items: OrderItem[];
+  totalPrice: number;
+  shippingInfo: ShippingInfo;
 };
