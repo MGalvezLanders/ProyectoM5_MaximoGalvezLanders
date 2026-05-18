@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { uploadImage } from "@/api/uploadImage";
+import { uploadImage } from "../../../api/uploadImage";
 
 type ImageUploaderProps = {
   value?: string;
@@ -10,7 +10,11 @@ type ImageUploaderProps = {
 
 const ACCEPTED = "image/jpeg,image/png,image/webp";
 
-export function ImageUploader({ value, onChange, onError }: ImageUploaderProps) {
+export function ImageUploader({
+  value,
+  onChange,
+  onError,
+}: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -73,9 +77,7 @@ export function ImageUploader({ value, onChange, onError }: ImageUploaderProps) 
                 ? "Cambiar imagen"
                 : "Subir imagen"}
           </Button>
-          <p className="text-xs text-leather-500">
-            JPG, PNG o WebP · máx 5 MB
-          </p>
+          <p className="text-xs text-leather-500">JPG, PNG o WebP · máx 5 MB</p>
           {uploading && progress !== null && (
             <div className="h-1.5 bg-cream-200 rounded-full overflow-hidden">
               <div

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
@@ -72,7 +72,7 @@ export default function AdminProductFormPage() {
     value: ProductInput[K],
   ) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -88,10 +88,10 @@ export default function AdminProductFormPage() {
       setError("El stock no puede ser negativo");
       return;
     }
-    if (!form.imageUrl) {
-      setError("Subí una imagen antes de guardar");
-      return;
-    }
+    // if (!form.imageUrl) {
+    //  setError("Subí una imagen antes de guardar");
+    //   return;
+    // }
 
     setSubmitting(true);
     try {
