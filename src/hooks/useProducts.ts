@@ -1,54 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  getProducts,
-  type ProductFilters,
-} from "../services/products";
-import type { Product } from "../types/product";
+import { useContext, useMemo } from "react";
+import { ProductsContext } from "../context/ProductsContext";
+import type { ProductFilters } from "../services/products";
 
-type UseProductsResult = {
-  products: Product[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-};
-
-export function useProducts(filters: ProductFilters = {}): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useProducts(filters: ProductFilters = {}) {
+  const ctx = useContext(ProductsContext);
+  if (!ctx) {
+    throw new Error("useProducts debe usarse dentro de <ProductsProvider>");
+  }
 
   const { category, search } = filters;
 
-  const fetchProducts = useCallback(
-    async (signal?: AbortSignal) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getProducts({ category, search });
-        if (signal?.aborted) return;
-        setProducts(data);
-      } catch (err) {
-        if (signal?.aborted) return;
-        const message =
-          err instanceof Error ? err.message : "Error al cargar productos";
-        setError(message);
-        setProducts([]);
-      } finally {
-        if (!signal?.aborted) setLoading(false);
-      }
-    },
-    [category, search],
-  );
+  const products = useMemo(() => {
+    let result = ctx.state.items;
+    if (category) {
+      result = result.filter((p) => p.category === category);
+    }
+    if (search) {
+      const q = search.trim().toLowerCase();
+      if (q) result = result.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [ctx.state.items, category, search]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchProducts(controller.signal);
-    return () => controller.abort();
-  }, [fetchProducts]);
-
-  const refetch = useCallback(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  return { products, loading, error, refetch };
+  return {
+    products,
+    loading: ctx.state.loading,
+    error: ctx.state.error,
+    refetch: ctx.fetchAll,
+    createOne: ctx.createOne,
+    updateOne: ctx.updateOne,
+    removeOne: ctx.removeOne,
+    bulkCreate: ctx.bulkCreate,
+    dispatch: ctx.dispatch,
+  };
 }

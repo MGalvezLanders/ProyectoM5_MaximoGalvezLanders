@@ -43,7 +43,7 @@ export function useRegisterForm() {
         }
         setIsSubmitting(true);
         try {
-            await register(form.email, form.password);
+            await register(form.email, form.password, form.name);
             navigate("/");
         } catch (err) {
             setFirebaseError(handleError(err).message);
