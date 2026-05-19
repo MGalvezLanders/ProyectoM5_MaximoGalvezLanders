@@ -102,3 +102,24 @@
   - **Race condition en `ImageUploader`** (`src/components/admin/ImageUploader.tsx`): un `mountedRef` previene `setState` sobre componente desmontado cuando el upload termina después de que el usuario navegó fuera del form.
   - **Validación de `imageUrl` activada en el submit** (`AdminProductFormPage.tsx`): el form ahora exige imagen antes de guardar — un producto sin imagen producía cards rotas en el catálogo.
   - **Regex de diacríticos en `slugifyFilename`** (`api/s3-presign.ts`): se reemplazó el rango de combining marks literales por `\p{M}` (clase Unicode estándar) para que no dependa del encoding del archivo.
+
+ ### Credenciales AWS NO están en el frontend — pero hay un matiz importante
+
+  El secret access key (AWS_SECRET_ACCESS_KEY) JAMÁS sale del server — confirmado, solo se usa en api/s3-presign.ts:47 con process.env.* (server-side only, sin prefijo
+  VITE_).
+
+  PERO el Access Key ID (AKIATWVRYQBYWTGLLDFT...) SÍ es visible en la presigned URL dentro del parámetro X-Amz-Credential=... (lo vimos en errores anteriores tuyos). Esto
+  es comportamiento normal y esperado de AWS — el Access Key ID es "público" en el sentido de que identifica al usuario IAM, pero sin el secret nadie puede hacer nada con
+  él. Es como un username.
+
+  → Si tu evaluador chequea DevTools → Network y ve AKIA... en la URL del PUT, va a parecer "credencial expuesta" pero no lo es. Anotalo para defenderlo: "el Access Key ID
+   es visible en presigned URLs por diseño; el secret nunca sale del server, y eso es lo único que da poder de acción".
+
+   ### Podés explicar el flujo de presigned URLs en voz alta — esto depende de vos, no del código
+
+  Lo que tenés a favor: DESICIONES.md tiene 4 secciones que cubren el flujo completo (presign + auth admin + cleanup + bucket policy). Si lo leés tranquilo antes de la
+  defensa, lo bajás. El flujo en una frase:
+
+  ▎ "El cliente, autenticado como admin, le pide al endpoint /api/s3-presign una URL temporal. El server verifica el ID token de Firebase con firebase-admin, confirma que
+  ▎ el email está en ADMIN_EMAILS, y firma una URL con las credenciales AWS que solo vive 60 segundos. El cliente hace PUT directo a S3 con esa URL — el archivo nunca pasa
+  ▎  por el server. S3 valida la firma y guarda el objeto. La URL pública del objeto se persiste en Firestore junto con los demás campos del producto."
