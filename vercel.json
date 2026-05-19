@@ -4,6 +4,13 @@
     "api/s3-presign.ts": {
       "memory": 256,
       "maxDuration": 10
+    },
+    "api/s3-delete.ts": {
+      "memory": 256,
+      "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
