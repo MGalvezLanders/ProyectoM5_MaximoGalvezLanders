@@ -53,7 +53,7 @@ const AppRouter = () => {
                 <Route
                   path="/admin/products/new"
                   element={<AdminProductFormPage />}
-                />
+                />  
                 <Route
                   path="/admin/products/:id/edit"
                   element={<AdminProductFormPage />}

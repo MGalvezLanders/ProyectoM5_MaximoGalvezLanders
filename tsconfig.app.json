@@ -26,5 +26,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "api/uploadImage.ts"]
+  "include": ["src", "src/services/admin/uploadImage.ts"]
 }

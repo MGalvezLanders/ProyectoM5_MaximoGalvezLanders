@@ -1,10 +1,10 @@
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
   getDocs,
   query,
+  runTransaction,
   serverTimestamp,
   updateDoc,
   where,
@@ -22,13 +22,56 @@ const mapDoc = (snapshot: {
   ...(snapshot.data() as Omit<Order, "id">),
 });
 
+//* Crea la orden y decrementa el stock de cada producto en una sola transacción.
+//* Si algún producto no existe o no tiene stock suficiente, la operación entera
+//* se aborta y no se persiste ningún cambio (atomicidad).
 export const createOrder = async (input: OrderInput): Promise<string> => {
-  const ref = await addDoc(ordersCollection, {
-    ...input,
-    status: "pending" as OrderStatus,
-    orderDate: serverTimestamp(),
+  if (input.items.length === 0) {
+    throw new Error("El carrito está vacío");
+  }
+
+  //* Pre-generamos el ID para devolverlo después del commit.
+  const orderRef = doc(ordersCollection);
+
+  await runTransaction(db, async (tx) => {
+    const productRefs = input.items.map((item) =>
+      doc(db, "products", item.id),
+    );
+
+    //* 1. READS — Firestore exige leer todo ANTES de cualquier write.
+    const productSnaps = await Promise.all(
+      productRefs.map((ref) => tx.get(ref)),
+    );
+
+    //* 2. VALIDACIÓN — stock suficiente en cada producto.
+    const stockUpdates: number[] = [];
+    productSnaps.forEach((snap, i) => {
+      const item = input.items[i];
+      if (!snap.exists()) {
+        throw new Error(`El producto "${item.name}" ya no está disponible`);
+      }
+      const currentStock = (snap.data().stock as number | undefined) ?? 0;
+      if (currentStock < item.quantity) {
+        throw new Error(
+          `Stock insuficiente para "${item.name}": disponible ${currentStock}, solicitado ${item.quantity}`,
+        );
+      }
+      stockUpdates.push(currentStock - item.quantity);
+    });
+
+    //* 3. WRITES — crear orden + decrementar stock.
+    tx.set(orderRef, {
+      ...input,
+      status: "pending" as OrderStatus,
+      orderDate: serverTimestamp(),
+    });
+
+    productRefs.forEach((ref, i) => {
+      tx.update(ref, { stock: stockUpdates[i] });
+    });
   });
-  return ref.id;
+
+  return orderRef.id;
 };
 
 export const getAllOrders = async (): Promise<Order[]> => {
