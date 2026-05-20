@@ -15,9 +15,9 @@ const formatPrice = (price: number) =>
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pendiente",
-  shipped: "Enviado",
-  delivered: "Entregado",
-  cancelled: "Cancelado",
+  processing: "En proceso",
+  completed: "Completada",
+  cancelled: "Cancelada",
 };
 
 const STATUS_TONES: Record<
@@ -25,17 +25,16 @@ const STATUS_TONES: Record<
   "sun" | "sky" | "field" | "danger"
 > = {
   pending: "sun",
-  shipped: "sky",
-  delivered: "field",
+  processing: "sky",
+  completed: "field",
   cancelled: "danger",
 };
 
-const FILTERS: Array<{ value: OrderStatus | "all"; label: string }> = [
-  { value: "all", label: "Todas" },
-  { value: "pending", label: "Pendientes" },
-  { value: "shipped", label: "Enviadas" },
-  { value: "delivered", label: "Entregadas" },
-  { value: "cancelled", label: "Canceladas" },
+const STATUS_ORDER: OrderStatus[] = [
+  "pending",
+  "processing",
+  "completed",
+  "cancelled",
 ];
 
 const formatOrderDate = (date: unknown): string => {
@@ -92,21 +91,26 @@ export default function AdminOrdersPage() {
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={[
-              "px-3 py-1.5 rounded-full text-sm font-medium border transition-colors",
-              filter === f.value
-                ? "bg-leather-600 text-cream-50 border-leather-600"
-                : "bg-cream-50 text-leather-700 border-sepia-400 hover:bg-cream-100",
-            ].join(" ")}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-2">
+        <label
+          htmlFor="status-filter"
+          className="text-sm font-medium text-leather-700"
+        >
+          Filtrar por estado:
+        </label>
+        <select
+          id="status-filter"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as OrderStatus | "all")}
+          className="px-3 py-2 rounded-lg bg-cream-50 text-leather-900 border border-sepia-400 text-sm focus:outline-none focus:ring-2 focus:ring-sun-500/50 focus:border-sun-500"
+        >
+          <option value="all">Todas</option>
+          {STATUS_ORDER.map((s) => (
+            <option key={s} value={s}>
+              {STATUS_LABELS[s]}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading && (
@@ -154,8 +158,8 @@ export default function AdminOrdersPage() {
                     {formatPrice(o.totalPrice)}
                   </td>
                   <td className="px-3 py-3">
-                    <Badge tone={STATUS_TONES[o.status]}>
-                      {STATUS_LABELS[o.status]}
+                    <Badge tone={STATUS_TONES[o.status] ?? "neutral"}>
+                      {STATUS_LABELS[o.status] ?? o.status}
                     </Badge>
                   </td>
                   <td className="px-6 py-3 text-right">

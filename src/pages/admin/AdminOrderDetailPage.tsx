@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { getOrderById, updateOrderStatus } from "@/services/orders";
+import { transitions } from "@/types/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
 
 const formatPrice = (price: number) =>
@@ -15,17 +16,17 @@ const formatPrice = (price: number) =>
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pendiente",
-  shipped: "Enviado",
-  delivered: "Entregado",
-  cancelled: "Cancelado",
+  processing: "En proceso",
+  completed: "Completada",
+  cancelled: "Cancelada",
 };
 
-const STATUS_OPTIONS: OrderStatus[] = [
-  "pending",
-  "shipped",
-  "delivered",
-  "cancelled",
-];
+const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
+  pending: "sun",
+  processing: "sky",
+  completed: "field",
+  cancelled: "danger",
+};
 
 const formatOrderDate = (date: unknown): string => {
   if (date instanceof Date) return date.toLocaleString("es-AR");
@@ -46,6 +47,7 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -72,12 +74,13 @@ export default function AdminOrderDetailPage() {
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
+    setStatusError(null);
     setSaving(true);
     try {
       await updateOrderStatus(order.id, newStatus);
       setOrder({ ...order, status: newStatus });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error actualizando");
+      setStatusError(err instanceof Error ? err.message : "Error actualizando el estado");
     } finally {
       setSaving(false);
     }
@@ -101,6 +104,9 @@ export default function AdminOrderDetailPage() {
       </div>
     );
   }
+
+  const validNextStatuses = transitions[order.status] ?? [];
+  const isFinal = validNextStatuses.length === 0;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -129,7 +135,9 @@ export default function AdminOrderDetailPage() {
           </span>
         </InfoCard>
         <InfoCard label="Estado actual">
-          <Badge tone="neutral">{STATUS_LABELS[order.status]}</Badge>
+          <Badge tone={STATUS_TONES[order.status] ?? "neutral"}>
+            {STATUS_LABELS[order.status] ?? order.status}
+          </Badge>
         </InfoCard>
       </div>
 
@@ -191,23 +199,40 @@ export default function AdminOrderDetailPage() {
         <h3 className="font-display text-lg font-semibold mb-3">
           Cambiar estado
         </h3>
-        <div className="flex items-center gap-3">
-          <select
-            value={order.status}
-            onChange={(e) =>
-              handleStatusChange(e.target.value as OrderStatus)
-            }
-            disabled={saving}
-            className="px-3 py-2 rounded-lg bg-cream-50 text-leather-900 border border-sepia-400 focus:outline-none focus:ring-2 focus:ring-sun-500/50"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-          {saving && <Spinner className="w-5 h-5" />}
-        </div>
+
+        {isFinal ? (
+          <p className="text-sm text-leather-600">
+            Esta orden está en estado final (<strong>{STATUS_LABELS[order.status] ?? order.status}</strong>) y no admite más cambios.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <select
+                value=""
+                onChange={(e) =>
+                  handleStatusChange(e.target.value as OrderStatus)
+                }
+                disabled={saving}
+                className="px-3 py-2 rounded-lg bg-cream-50 text-leather-900 border border-sepia-400 focus:outline-none focus:ring-2 focus:ring-sun-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <option value="" disabled>
+                  Mover a...
+                </option>
+                {validNextStatuses.map((s) => (
+                  <option key={s} value={s}>
+                    {STATUS_LABELS[s]}
+                  </option>
+                ))}
+              </select>
+              {saving && <Spinner className="w-5 h-5" />}
+            </div>
+            {statusError && (
+              <p className="text-xs text-terracota-500" role="alert">
+                {statusError}
+              </p>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

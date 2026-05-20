@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Order, OrderInput, OrderStatus } from "../types/order";
+import { canTransition } from "../types/orderStatus";
 
 const ordersCollection = collection(db, "orders");
 
@@ -101,7 +102,15 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
 
 export const updateOrderStatus = async (
   id: string,
-  status: OrderStatus,
+  newStatus: OrderStatus,
 ): Promise<void> => {
-  await updateDoc(doc(db, "orders", id), { status });
+  const snap = await getDoc(doc(db, "orders", id));
+  if (!snap.exists()) throw new Error("Orden no encontrada");
+  const currentStatus = (snap.data() as Order).status;
+  if (!canTransition(currentStatus, newStatus)) {
+    throw new Error(
+      `Transición inválida: "${currentStatus}" → "${newStatus}"`,
+    );
+  }
+  await updateDoc(doc(db, "orders", id), { status: newStatus });
 };
