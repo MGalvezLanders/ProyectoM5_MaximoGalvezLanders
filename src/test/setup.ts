@@ -37,3 +37,35 @@ vi.mock("@aws-sdk/client-s3", () => ({
 vi.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: vi.fn().mockResolvedValue("https://signed.example/upload"),
 }));
+
+// Productos: evita cualquier llamada a Firestore durante tests de UI.
+vi.mock("@/services/products", () => ({
+  getProducts: vi.fn().mockResolvedValue([]),
+  getProductById: vi.fn().mockResolvedValue(null),
+  getCategories: vi.fn().mockResolvedValue([]),
+  createProduct: vi.fn().mockResolvedValue("mock-product-id"),
+  updateProduct: vi.fn().mockResolvedValue(undefined),
+  deleteProduct: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Firestore users: funciones llamadas sólo cuando hay usuario logueado.
+vi.mock("@/services/users", () => ({
+  getUserProfile: vi.fn().mockResolvedValue(null),
+  createUserProfile: vi.fn().mockResolvedValue(undefined),
+  updateUserRole: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Carrito: por defecto vacío. Tests individuales pueden re-mockear con vi.mocked().
+vi.mock("@/services/cart", () => ({
+  getCart: vi.fn().mockResolvedValue([]),
+  saveCart: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Órdenes: devuelve un id ficticio para no conectar a Firestore.
+vi.mock("@/services/orders", () => ({
+  createOrder: vi.fn().mockResolvedValue("mock-order-id"),
+  getAllOrders: vi.fn().mockResolvedValue([]),
+  getUserOrders: vi.fn().mockResolvedValue([]),
+  getOrderById: vi.fn().mockResolvedValue(null),
+  updateOrderStatus: vi.fn().mockResolvedValue(undefined),
+}));
