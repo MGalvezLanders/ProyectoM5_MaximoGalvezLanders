@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
-import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
-import CatalogPage from "@/pages/CatalogPage";
-import ProductDetailPage from "@/pages/ProductDetailPage";
+import LoginPage from "@/pages/forms/LoginPage";
+import RegisterPage from "@/pages/forms/RegisterPage";
+import CatalogPage from "@/pages/catalog/CatalogPage";
+import ProductDetailPage from "@/pages/products/ProductDetailPage";
 import ProfilePage from "@/pages/ProfilePage";
-import CartPage from "@/pages/CartPage";
-import CheckoutPage from "@/pages/CheckoutPage";
-import OrdersPage from "@/pages/OrdersPage";
-import OrderDetailPage from "@/pages/OrderDetailPage";
+import CartPage from "@/pages/cart/CartPage";
+import CheckoutPage from "@/pages/cart/CheckoutPage";
+import OrdersPage from "@/pages/orders/OrdersPage";
+import OrderDetailPage from "@/pages/orders/OrderDetailPage";
 import NotFoundPage from "@/pages/NotFoundPage";
-import AdminPage from "@/pages/AdminPage";
+import AdminPage from "@/pages/admin/AdminPage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminProductFormPage from "@/pages/admin/AdminProductFormPage";
 import AdminOrdersPage from "@/pages/admin/AdminOrdersPage";
@@ -53,7 +53,7 @@ const AppRouter = () => {
                 <Route
                   path="/admin/products/new"
                   element={<AdminProductFormPage />}
-                />  
+                />
                 <Route
                   path="/admin/products/:id/edit"
                   element={<AdminProductFormPage />}

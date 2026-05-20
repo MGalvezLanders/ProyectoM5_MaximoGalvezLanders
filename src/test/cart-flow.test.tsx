@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import { ProductCard } from "@/components/ProductCard";
-import CartPage from "@/pages/CartPage";
+import CartPage from "@/pages/cart/CartPage";
 import { mockProduct } from "@/test/fixtures";
 
 // Test de integración del flujo:
