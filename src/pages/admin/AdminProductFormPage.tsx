@@ -3,7 +3,8 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type SubmitEvent,
+  type FocusEvent,
+  type FormEvent,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -35,7 +36,7 @@ type FormErrors = {
   image?: string;
 };
 
-type FormStatus = "editing" | "submitting" | "error";
+type FormStatus = "editing" | "submitting" | "success" | "error";
 
 type FormState = {
   fields: FormFields;
@@ -100,6 +101,7 @@ export default function AdminProductFormPage() {
   const [state, setState] = useState<FormState>(INITIAL_STATE);
   const [loading, setLoading] = useState(isEditing);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, true>>>({});
 
   //* Para borrar la imagen vieja de S3 si la reemplazan al editar.
   const initialImageUrlRef = useRef<string>("");
@@ -170,8 +172,13 @@ export default function AdminProductFormPage() {
     }));
   };
 
+  const handleBlur = (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTouched((prev) => ({ ...prev, [e.target.name]: true }));
+  };
+
   const handleFileSelected = (file: File | null) => {
     setSelectedFile(file);
+    setTouched((prev) => ({ ...prev, image: true }));
     const hasImage = Boolean(file || state.fields.imageUrl);
     setState((prev) => ({
       ...prev,
@@ -179,13 +186,21 @@ export default function AdminProductFormPage() {
     }));
   };
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     //* 1. Validar campos
     const hasImage = Boolean(selectedFile || state.fields.imageUrl);
     const errors = validateFields(state.fields, hasImage);
     if (Object.keys(errors).length > 0) {
+      setTouched({
+        name: true,
+        description: true,
+        price: true,
+        category: true,
+        stock: true,
+        image: true,
+      });
       setState((prev) => ({ ...prev, errors, globalError: null }));
       return;
     }
@@ -227,7 +242,8 @@ export default function AdminProductFormPage() {
         void deleteImageByUrl(oldUrl);
       }
 
-      navigate("/admin/products");
+      setState((prev) => ({ ...prev, status: "success" }));
+      setTimeout(() => navigate("/admin/products"), 1500);
     } catch (err) {
       console.error("[AdminProductFormPage] submit error:", err);
       let message = "No se pudo guardar el producto";
@@ -259,6 +275,11 @@ export default function AdminProductFormPage() {
 
   const submitting = state.status === "submitting";
 
+  //* Solo mostrar errores de campos que el usuario ya tocó
+  const visibleErrors: FormErrors = Object.fromEntries(
+    Object.entries(state.errors).filter(([key]) => touched[key as keyof FormErrors])
+  ) as FormErrors;
+
   return (
     <div className="max-w-2xl">
       <header className="mb-6">
@@ -271,7 +292,7 @@ export default function AdminProductFormPage() {
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        <Field label="Imagen" htmlFor="image" error={state.errors.image}>
+        <Field label="Imagen" htmlFor="image" error={visibleErrors.image}>
           <ImageUploader
             existingImageUrl={state.fields.imageUrl}
             onFileSelected={handleFileSelected}
@@ -279,13 +300,14 @@ export default function AdminProductFormPage() {
           />
         </Field>
 
-        <Field label="Nombre" htmlFor="name" error={state.errors.name}>
+        <Field label="Nombre" htmlFor="name" error={visibleErrors.name}>
           <input
             id="name"
             name="name"
             type="text"
             value={state.fields.name}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={inputClass}
             placeholder="Mate Imperial"
             disabled={submitting}
@@ -295,13 +317,14 @@ export default function AdminProductFormPage() {
         <Field
           label="Descripción"
           htmlFor="description"
-          error={state.errors.description}
+          error={visibleErrors.description}
         >
           <textarea
             id="description"
             name="description"
             value={state.fields.description}
             onChange={handleChange}
+            onBlur={handleBlur}
             rows={4}
             className={inputClass}
             placeholder="Detalles del producto..."
@@ -313,7 +336,7 @@ export default function AdminProductFormPage() {
           <Field
             label="Categoría"
             htmlFor="category"
-            error={state.errors.category}
+            error={visibleErrors.category}
           >
             <input
               id="category"
@@ -322,6 +345,7 @@ export default function AdminProductFormPage() {
               list="category-suggestions"
               value={state.fields.category}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={inputClass}
               placeholder="mates"
               disabled={submitting}
@@ -333,7 +357,7 @@ export default function AdminProductFormPage() {
             </datalist>
           </Field>
 
-          <Field label="Precio (ARS)" htmlFor="price" error={state.errors.price}>
+          <Field label="Precio (ARS)" htmlFor="price" error={visibleErrors.price}>
             <input
               id="price"
               name="price"
@@ -342,13 +366,14 @@ export default function AdminProductFormPage() {
               step={100}
               value={state.fields.price}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={inputClass}
               disabled={submitting}
             />
           </Field>
         </div>
 
-        <Field label="Stock" htmlFor="stock" error={state.errors.stock}>
+        <Field label="Stock" htmlFor="stock" error={visibleErrors.stock}>
           <input
             id="stock"
             name="stock"
@@ -356,10 +381,17 @@ export default function AdminProductFormPage() {
             min={0}
             value={state.fields.stock}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={inputClass}
             disabled={submitting}
           />
         </Field>
+
+        {state.status === "success" && (
+          <p className="text-sm text-green-600 font-medium" role="status">
+            Producto guardado con éxito. Redirigiendo...
+          </p>
+        )}
 
         {state.globalError && (
           <p className="text-sm text-terracota-500" role="alert">
