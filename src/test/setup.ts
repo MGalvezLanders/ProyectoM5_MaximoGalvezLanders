@@ -1,9 +1,17 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
+import { server } from "./msw/server";
 
 // La limpieza del DOM entre tests la hace Testing Library automáticamente
 // (globals: true), y el reseteo de mocks lo maneja `clearMocks` en
 // vitest.config.ts. Acá solo registramos los module mocks.
+
+// MSW: interceptor HTTP global para /api/* y la presigned URL de S3.
+// "error" hace que cualquier request no mockeada falle el test — ningún test
+// debe pegarle a red real.
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // Firebase: nunca inicializamos el SDK real en tests. Reemplazamos el módulo
 // que exporta `auth` y `db` por stubs vacíos.
