@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
     clearError();
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
 

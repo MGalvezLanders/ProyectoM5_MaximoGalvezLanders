@@ -35,7 +35,7 @@ describe("<Button />", () => {
   });
 
   it("type='submit' envía el formulario", async () => {
-    const handleSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+    const handleSubmit = vi.fn((e: React.SyntheticEvent<HTMLFormElement>) => e.preventDefault());
     const user = userEvent.setup();
     render(
       <form onSubmit={handleSubmit}>

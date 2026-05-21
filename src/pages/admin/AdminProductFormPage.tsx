@@ -4,7 +4,7 @@ import {
   useState,
   type ChangeEvent,
   type FocusEvent,
-  type FormEvent,
+  type SyntheticEvent,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -186,7 +186,7 @@ export default function AdminProductFormPage() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     //* 1. Validar campos

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { ProductsContext } from "../context/ProductsContext";
-import { getProductById } from "../services/products";
-import type { Product } from "../types/product";
+import { ProductsContext } from "@/context/ProductsContext";
+import { getProductById } from "@/services/products";
+import type { Product } from "@/types/product";
 
 type UseProductResult = {
   product: Product | null;

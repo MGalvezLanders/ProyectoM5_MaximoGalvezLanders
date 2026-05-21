@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import { useAuthError } from "./errors/useAuthError";
@@ -31,7 +31,7 @@ export function useLoginForm() {
         clearError();
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         const validationErrors = validate(form);
         if (Object.keys(validationErrors).length > 0) {
