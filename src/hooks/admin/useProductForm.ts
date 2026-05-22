@@ -7,7 +7,7 @@ import {
   type SyntheticEvent,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useProductsAdmin } from "@/hooks/useProductsAdmin";
+import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { getProductById } from "@/services/products.service";
 import {
   deleteImageByUrl,

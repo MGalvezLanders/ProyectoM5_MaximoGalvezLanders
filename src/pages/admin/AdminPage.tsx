@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { useProductsAdmin } from "@/hooks/useProductsAdmin";
+import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { getAllOrders } from "@/services/orders.service";
 import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
@@ -65,7 +65,6 @@ export default function AdminPage() {
       setIsSeeding(false);
     }
   };
-
 
   const loading = productsLoading || ordersLoading;
   const error = productsError ?? ordersError;
@@ -141,7 +140,6 @@ export default function AdminPage() {
           {seedMessage && (
             <p className="mt-2 text-sm text-leather-700">{seedMessage}</p>
           )}
-
         </div>
       )}
     </div>

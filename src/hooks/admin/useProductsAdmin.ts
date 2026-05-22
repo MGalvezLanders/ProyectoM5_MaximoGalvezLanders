@@ -1,5 +1,5 @@
-import { useProductsList } from "@/hooks/useProductsList";
-import { useProductsActions } from "@/hooks/useProductsActions";
+import { useProductsList } from "@/hooks/products/useProductsList";
+import { useProductsActions } from "@/hooks/products/useProductsActions";
 import type { ProductFilters } from "@/services/products.service";
 
 export function useProductsAdmin(filters: ProductFilters = {}) {

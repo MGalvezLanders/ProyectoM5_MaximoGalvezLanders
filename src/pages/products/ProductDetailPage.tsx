@@ -7,7 +7,7 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
-import { useProduct } from "@/hooks/useProduct";
+import { useProduct } from "@/hooks/products/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/utils/formatting";
 import { getStockBadge } from "@/utils/product";

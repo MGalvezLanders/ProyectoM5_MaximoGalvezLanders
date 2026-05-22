@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
-import { useProductsAdmin } from "@/hooks/useProductsAdmin";
+import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { formatPrice } from "@/utils/formatting";
 import type { Product } from "@/types/product";
 
@@ -12,7 +12,9 @@ export default function AdminProductsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (product: Product) => {
-    if (!confirm(`¿Eliminar "${product.name}"? Esta acción no se puede deshacer.`)) {
+    if (
+      !confirm(`¿Eliminar "${product.name}"? Esta acción no se puede deshacer.`)
+    ) {
       return;
     }
     setDeletingId(product.id);

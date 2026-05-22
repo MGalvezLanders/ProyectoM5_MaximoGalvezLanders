@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { useProductsActions } from "@/hooks/useProductsActions";
+import { useProductsActions } from "@/hooks/products/useProductsActions";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { createOrder } from "@/services/orders.service";
 import type { OrderItem, ShippingInfo } from "@/types/order";
