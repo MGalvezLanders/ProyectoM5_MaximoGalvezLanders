@@ -20,15 +20,15 @@ const formatPrice = (price: number) =>
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pendiente",
-  shipped: "Enviado",
-  delivered: "Entregado",
+  processing: "En proceso",
+  completed: "Entregado",
   cancelled: "Cancelado",
 };
 
 const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
   pending: "sun",
-  shipped: "sky",
-  delivered: "field",
+  processing: "sky",
+  completed: "field",
   cancelled: "danger",
 };
 
