@@ -161,3 +161,55 @@
   - AdminProductsPage.tsx — sin formatPrice local
   - ProductDetailPage.tsx — sin formatPrice ni getStockBadge locales
   - AuthContext.tsx — UserProfile viene de types/auth.ts
+
+
+  ## Siguiendo los principios SOLID que otros cambios me propondrias 
+
+  1. ISP — ProductsContext expone demasiado a todos los consumidores
+
+  El contexto mezcla lectura y escritura. Una CatalogPage o ProductDetailPage recibe createOne, updateOne, removeOne, bulkCreate... métodos que jamás va
+  a usar.
+
+  Propuesta: dividir en dos contextos:
+  - ProductsReadContext — solo items, loading, error, fetchAll
+  - ProductsWriteContext — el CRUD, solo usado en rutas admin
+
+  ---
+  2. SRP — AuthContext tiene lógica de negocio mezclada con estado
+
+  La función resolveProfile dentro de AuthContext.tsx hace tres cosas: busca el perfil, lo crea si no existe, y promueve a admin si corresponde. Es
+  lógica de negocio que no pertenece en un contexto de React.
+
+  Propuesta: mover resolveProfile a services/users.service.ts como resolveOrCreateProfile(firebaseUser). El contexto solo llama al servicio y gestiona el
+   estado.
+
+  ---
+  3. DIP — Los hooks y contextos dependen de implementaciones concretas de Firebase
+
+  useProductForm, CatalogContext, ProductsContext importan directamente desde products.service.ts. Si mañana cambiás el backend (Firebase → REST API),
+  tenés que modificar todos esos archivos.
+
+  Propuesta: un repositorio como capa intermedia:
+  hooks/contextos → IProductRepository (interfaz) → FirebaseProductRepository (implementación)
+  Permite cambiar el backend sin tocar la UI, y hace los tests más simples (mockés la interfaz, no Firebase).
+
+  ---
+  4. OCP — Los 5 hooks de error no comparten base
+
+  useFirestoreError, useHttpError, useStorageError, etc. probablemente tienen la misma estructura interna y se diferencian solo en cómo mapean el error a
+   mensaje legible.
+
+  Propuesta: un hook base useError(mapper: (err) => string) del que los específicos son solo variantes. Agregar un nuevo tipo de error es extender, no
+  modificar.
+
+  ---
+  5. ISP — CatalogContext mezcla tres responsabilidades
+
+  Hoy maneja: estado de los filtros (category, searchPrefix), estado de paginación (lastDoc, hasMore) y fetching de datos. Son tres razones distintas
+  para cambiar.
+
+  Propuesta: separar en useCatalogFilters (estado de filtros) y useCatalogPage (paginación + fetching), que CatalogContext compone.
+
+  ---
+  Mi recomendación de orden: empezar por el 2 (SRP en AuthContext) porque es el cambio más pequeño con beneficio inmediato en testabilidad, luego el 1
+  (ISP en ProductsContext) porque el mayor riesgo de bugs siempre está en exponer mutaciones donde no deberían estar. ¿Querés que implemente alguno?
