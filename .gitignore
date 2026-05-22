@@ -15,6 +15,7 @@ dist-ssr
 PLAN.md
 ses-sender_accessKeys.csv
 firebase-service-account.json
+coverage/
 
 # Editor directories and files
 .vscode/*
