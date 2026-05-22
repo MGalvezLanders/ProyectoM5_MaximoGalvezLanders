@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { ProductsContext } from "@/context/ProductsContext";
+import { ProductsStateContext } from "@/context/ProductsContext";
 import { getProductById } from "@/services/products.service";
 import type { Product } from "@/types/product";
 
@@ -11,7 +11,7 @@ type UseProductResult = {
 };
 
 export function useProduct(id: string | undefined): UseProductResult {
-  const ctx = useContext(ProductsContext);
+  const ctx = useContext(ProductsStateContext);
   if (!ctx) {
     throw new Error("useProduct debe usarse dentro de <ProductsProvider>");
   }

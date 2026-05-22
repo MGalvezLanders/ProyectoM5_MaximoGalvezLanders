@@ -44,6 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  const handleLogin = async (email: string, password: string) => {
+    await login(email, password);
+  };
+
+  const handleRegister = async (email: string, password: string, name: string) => {
+    await register(email, password, name);
+  };
+
+  const handleLoginWithGoogle = async () => {
+    await loginWithGoogle();
+  };
+
   const handleLogout = async () => {
     await logout();
     setProfile(null);
@@ -55,9 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         profile,
         loading,
-        login,
-        register,
-        loginWithGoogle,
+        login: handleLogin,
+        register: handleRegister,
+        loginWithGoogle: handleLoginWithGoogle,
         logout: handleLogout,
       }}
     >
