@@ -47,7 +47,9 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
 }));
 
 // Productos: evita cualquier llamada a Firestore durante tests de UI.
-vi.mock("@/services/products", () => ({
+// Importante: el módulo real es `products.service` (no `products`); este
+// mock necesita matchear ese path exacto para interceptar los imports.
+vi.mock("@/services/products.service", () => ({
   getProducts: vi.fn().mockResolvedValue([]),
   getProductById: vi.fn().mockResolvedValue(null),
   getCategories: vi.fn().mockResolvedValue([]),

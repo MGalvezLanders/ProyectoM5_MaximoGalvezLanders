@@ -4,7 +4,7 @@ import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import { ProductCard } from "@/components/ProductCard";
 import CartPage from "@/pages/cart/CartPage";
-import { mockProduct } from "@/test/fixtures";
+import { mockProduct, mockFirebaseUser } from "@/test/fixtures";
 
 // Test de integración del flujo:
 //   agregar al carrito (ProductCard) → ver carrito (CartPage) → checkout
@@ -28,7 +28,7 @@ function TestApp() {
 describe("flujo agregar al carrito → ver carrito → checkout", () => {
   it("recorre el flujo completo", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<TestApp />, { initialEntries: ["/"] });
+    renderWithProviders(<TestApp />, { initialEntries: ["/"], mockUser: mockFirebaseUser });
 
     // 1) Arranca con el carrito vacío.
     expect(screen.getByText(/Tu carrito está vacío/i)).toBeInTheDocument();
