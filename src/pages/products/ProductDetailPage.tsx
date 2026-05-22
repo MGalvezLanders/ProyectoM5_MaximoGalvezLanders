@@ -10,8 +10,9 @@ import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useProduct } from "@/hooks/products/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/utils/formatting";
-import { getStockBadge } from "@/utils/product";
+import { getStockBadge } from "@/utils/stockBadge";
 import type { Product } from "@/types/product";
+import {useAuth} from "@/hooks/useAuth";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,6 +68,7 @@ const ProductDetailPage = () => {
 };
 
 function ProductDetailContent({ product }: { product: Product }) {
+  const {user} = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const { addItem } = useCart();
@@ -74,6 +76,10 @@ function ProductDetailContent({ product }: { product: Product }) {
   const outOfStock = product.stock === 0;
 
   const handleAddToCart = () => {
+    if (!user) {
+      alert("Debes iniciar sesión para agregar productos al carrito.");
+      return;
+    }
     addItem(product, quantity);
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 1500);

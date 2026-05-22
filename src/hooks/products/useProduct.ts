@@ -17,7 +17,7 @@ export function useProduct(id: string | undefined): UseProductResult {
   }
 
   const cached = id ? (ctx.state.items.find((p) => p.id === id) ?? null) : null;
-
+   
   const [fetched, setFetched] = useState<Product | null>(null);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);

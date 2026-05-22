@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/types/product";
 
@@ -17,11 +18,16 @@ const formatPrice = (price: number) =>
   }).format(price);
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { user } = useAuth();
   const { addItem } = useCart();
   const [justAdded, setJustAdded] = useState(false);
   const outOfStock = product.stock === 0;
 
   const handleAdd = () => {
+    if (!user) {
+      alert("Debes iniciar sesión para agregar productos al carrito.");
+      return;
+    }
     addItem(product);
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 1500);
