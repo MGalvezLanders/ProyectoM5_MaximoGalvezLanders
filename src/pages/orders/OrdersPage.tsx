@@ -8,6 +8,7 @@ import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useUserOrders } from "@/hooks/useUserOrders";
 import { formatPrice, formatOrderDateShort } from "@/utils/formatting";
 import { STATUS_LABELS, STATUS_TONES } from "@/utils/orderStatus";
+import { BackButton } from "@/components/button/BackButton";
 
 export default function OrdersPage() {
   const { orders, loading, error } = useUserOrders();
@@ -53,6 +54,7 @@ export default function OrdersPage() {
 
   return (
     <Container size="lg" className="py-12">
+      <BackButton variant="backHome" className="mb-4">Volver al inicio</BackButton>
       <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
         Mis pedidos
       </h1>

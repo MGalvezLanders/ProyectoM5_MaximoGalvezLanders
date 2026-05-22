@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useCart } from "@/hooks/useCart";
+import { BackButton } from "@/components/button/BackButton";
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("es-AR", {
@@ -18,7 +19,10 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { items } = state;
 
-  const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
   const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
 
   if (items.length === 0) {
@@ -42,6 +46,7 @@ export default function CartPage() {
 
   return (
     <Container size="lg" className="py-12">
+      <BackButton variant="back" className="mb-4">Seguir comprando</BackButton>
       <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
         Tu carrito
       </h1>

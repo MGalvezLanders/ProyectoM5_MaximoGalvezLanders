@@ -7,6 +7,7 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
+import { BackButton } from "@/components/button/BackButton";
 import { useProduct } from "@/hooks/products/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/utils/formatting";
@@ -87,6 +88,7 @@ function ProductDetailContent({ product }: { product: Product }) {
 
   return (
     <>
+      <BackButton variant="backCatalog" className="mb-6">Volver al catálogo</BackButton>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {/* Imagen */}
         <div className="bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm">
@@ -177,25 +179,6 @@ function ProductDetailContent({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Volver al catálogo */}
-      <div className="mt-12 pt-8 border-t border-sepia-300 text-center">
-        <Link
-          to="/catalog"
-          className="inline-flex items-center gap-2 text-sm font-medium text-leather-700 hover:text-leather-900 transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver al catálogo
-        </Link>
-      </div>
     </>
   );
 }
