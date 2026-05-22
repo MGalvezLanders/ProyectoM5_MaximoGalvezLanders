@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { useProducts } from "@/hooks/useProducts";
+import { useProductsActions } from "@/hooks/useProductsActions";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { createOrder } from "@/services/orders.service";
 import type { OrderItem, ShippingInfo } from "@/types/order";
@@ -22,7 +22,7 @@ function validate(form: ShippingInfo): Partial<ShippingInfo> {
 export function useCheckout() {
   const { user, profile } = useAuth();
   const { state: cartState, clear } = useCart();
-  const { products, dispatch: productsDispatch } = useProducts();
+  const { syncStockAfterPurchase } = useProductsActions();
   const navigate = useNavigate();
   const { error: createError, captureError, clearError } = useFirestoreError();
 
@@ -79,15 +79,9 @@ export function useCheckout() {
         },
       });
 
-      orderItems.forEach((item) => {
-        const product = products.find((p) => p.id === item.id);
-        if (product) {
-          productsDispatch({
-            type: "UPDATE",
-            payload: { ...product, stock: product.stock - item.quantity },
-          });
-        }
-      });
+      syncStockAfterPurchase(
+        orderItems.map(({ id, quantity }) => ({ id, quantity })),
+      );
 
       clear();
       navigate(`/orders/${orderId}`, { replace: true });

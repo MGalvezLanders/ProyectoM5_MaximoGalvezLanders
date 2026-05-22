@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { useProducts } from "@/hooks/useProducts";
+import { useProductsAdmin } from "@/hooks/useProductsAdmin";
 import { getAllOrders } from "@/services/orders.service";
 import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
@@ -18,7 +18,7 @@ export default function AdminPage() {
     loading: productsLoading,
     error: productsError,
     bulkCreate,
-  } = useProducts();
+  } = useProductsAdmin();
 
   const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(true);

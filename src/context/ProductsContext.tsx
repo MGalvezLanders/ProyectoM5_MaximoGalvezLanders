@@ -3,7 +3,7 @@ import {
   useCallback,
   useEffect,
   useReducer,
-  type Dispatch,
+  useRef,
   type ReactNode,
 } from "react";
 import {
@@ -17,24 +17,38 @@ import {
 import {
   initialProductsState,
   productsReducer,
-  type ProductsAction,
   type ProductsState,
 } from "../reducers/productsReducer";
 
-type ProductsContextType = {
+export type ProductsStateContextType = {
   state: ProductsState;
-  dispatch: Dispatch<ProductsAction>;
   fetchAll: () => Promise<void>;
+};
+
+export type ProductsActionsContextType = {
   createOne: (input: ProductInput) => Promise<string>;
   updateOne: (id: string, input: Partial<ProductInput>) => Promise<void>;
   removeOne: (id: string) => Promise<void>;
   bulkCreate: (inputs: ProductInput[]) => Promise<number>;
+  syncStockAfterPurchase: (
+    items: Array<{ id: string; quantity: number }>,
+  ) => void;
 };
 
-export const ProductsContext = createContext<ProductsContextType | null>(null);
+export const ProductsStateContext =
+  createContext<ProductsStateContextType | null>(null);
+
+export const ProductsActionsContext =
+  createContext<ProductsActionsContextType | null>(null);
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(productsReducer, initialProductsState);
+
+  // Ref para que syncStockAfterPurchase sea siempre estable (sin deps de state)
+  const itemsRef = useRef(state.items);
+  useEffect(() => {
+    itemsRef.current = state.items;
+  }, [state.items]);
 
   const fetchAll = useCallback(async () => {
     dispatch({ type: "FETCH_START" });
@@ -50,16 +64,12 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createOne = useCallback(
-    async (input: ProductInput): Promise<string> => {
-      const id = await svcCreateProduct(input);
-      // Releemos el producto recién creado para tener el `createdAt` del server
-      const fresh = await getProductById(id);
-      if (fresh) dispatch({ type: "ADD", payload: fresh });
-      return id;
-    },
-    [],
-  );
+  const createOne = useCallback(async (input: ProductInput): Promise<string> => {
+    const id = await svcCreateProduct(input);
+    const fresh = await getProductById(id);
+    if (fresh) dispatch({ type: "ADD", payload: fresh });
+    return id;
+  }, []);
 
   const updateOne = useCallback(
     async (id: string, input: Partial<ProductInput>): Promise<void> => {
@@ -87,23 +97,38 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const syncStockAfterPurchase = useCallback(
+    (items: Array<{ id: string; quantity: number }>) => {
+      items.forEach(({ id, quantity }) => {
+        const product = itemsRef.current.find((p) => p.id === id);
+        if (product) {
+          dispatch({
+            type: "UPDATE",
+            payload: { ...product, stock: product.stock - quantity },
+          });
+        }
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
   return (
-    <ProductsContext.Provider
-      value={{
-        state,
-        dispatch,
-        fetchAll,
-        createOne,
-        updateOne,
-        removeOne,
-        bulkCreate,
-      }}
-    >
-      {children}
-    </ProductsContext.Provider>
+    <ProductsStateContext.Provider value={{ state, fetchAll }}>
+      <ProductsActionsContext.Provider
+        value={{
+          createOne,
+          updateOne,
+          removeOne,
+          bulkCreate,
+          syncStockAfterPurchase,
+        }}
+      >
+        {children}
+      </ProductsActionsContext.Provider>
+    </ProductsStateContext.Provider>
   );
 }

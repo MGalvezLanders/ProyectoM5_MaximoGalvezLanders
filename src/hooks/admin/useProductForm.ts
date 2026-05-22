@@ -7,7 +7,7 @@ import {
   type SyntheticEvent,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useProducts } from "@/hooks/useProducts";
+import { useProductsAdmin } from "@/hooks/useProductsAdmin";
 import { getProductById } from "@/services/products.service";
 import {
   deleteImageByUrl,
@@ -57,7 +57,7 @@ export function useProductForm() {
   const { id: productId } = useParams<{ id: string }>();
   const isEditing = Boolean(productId);
   const navigate = useNavigate();
-  const { createOne, updateOne } = useProducts();
+  const { createOne, updateOne } = useProductsAdmin();
 
   const [state, setState] = useState<ProductFormState>(INITIAL_STATE);
   const [loading, setLoading] = useState(isEditing);

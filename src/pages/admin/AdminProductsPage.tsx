@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
-import { useProducts } from "@/hooks/useProducts";
+import { useProductsAdmin } from "@/hooks/useProductsAdmin";
 import { formatPrice } from "@/utils/formatting";
 import type { Product } from "@/types/product";
 
 export default function AdminProductsPage() {
-  const { products, loading, error, refetch, removeOne } = useProducts();
+  const { products, loading, error, refetch, removeOne } = useProductsAdmin();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (product: Product) => {
