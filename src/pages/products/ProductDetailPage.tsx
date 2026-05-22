@@ -9,26 +9,9 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useProduct } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
+import { formatPrice } from "@/utils/formatting";
+import { getStockBadge } from "@/utils/product";
 import type { Product } from "@/types/product";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-type StockBadge = {
-  label: string;
-  tone: "field" | "sun" | "danger" | "neutral";
-};
-
-const getStockBadge = (stock: number): StockBadge => {
-  if (stock === 0) return { label: "Sin stock", tone: "danger" };
-  if (stock <= 3) return { label: "Últimas unidades", tone: "sun" };
-  if (stock <= 10) return { label: "Pocas unidades", tone: "sun" };
-  return { label: "Disponible", tone: "field" };
-};
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();

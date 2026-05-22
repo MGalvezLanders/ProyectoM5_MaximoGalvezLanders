@@ -4,14 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProducts } from "@/hooks/useProducts";
+import { formatPrice } from "@/utils/formatting";
 import type { Product } from "@/types/product";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
 
 export default function AdminProductsPage() {
   const { products, loading, error, refetch, removeOne } = useProducts();

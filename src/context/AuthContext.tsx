@@ -12,14 +12,8 @@ import {
   getUserProfile,
   updateUserRole,
 } from "../services/users.service";
-import type { UserRole } from "../types/user";
 import { isAdminEmail } from "../utils/admin";
-
-type UserProfile = {
-  name: string;
-  email: string;
-  role: UserRole;
-};
+import type { UserProfile } from "../types/auth";
 
 type AuthContextType = {
   user: FirebaseUser | null;

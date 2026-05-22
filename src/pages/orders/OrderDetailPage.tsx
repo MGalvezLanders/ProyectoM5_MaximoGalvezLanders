@@ -9,40 +9,9 @@ import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { getOrderById } from "@/services/orders.service";
-import type { Order, OrderStatus } from "@/types/order";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendiente",
-  processing: "En proceso",
-  completed: "Entregado",
-  cancelled: "Cancelado",
-};
-
-const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
-  pending: "sun",
-  processing: "sky",
-  completed: "field",
-  cancelled: "danger",
-};
-
-const formatOrderDate = (date: unknown): string => {
-  if (
-    date &&
-    typeof date === "object" &&
-    "toDate" in date &&
-    typeof (date as { toDate: () => Date }).toDate === "function"
-  ) {
-    return (date as { toDate: () => Date }).toDate().toLocaleString("es-AR");
-  }
-  return "—";
-};
+import { formatPrice, formatOrderDate } from "@/utils/formatting";
+import { STATUS_LABELS, STATUS_TONES } from "@/utils/orderStatus";
+import type { Order } from "@/types/order";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();

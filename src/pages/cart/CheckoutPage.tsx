@@ -1,117 +1,28 @@
-import { useState, type ChangeEvent, type SyntheticEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/login-register/FormField";
-import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
-import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { useProducts } from "@/hooks/useProducts";
-import { createOrder } from "@/services/orders.service";
-import type { OrderItem } from "@/types/order";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-type ShippingForm = { name: string; address: string; city: string };
-type ShippingErrors = Partial<ShippingForm>;
-
-function validate(form: ShippingForm): ShippingErrors {
-  const errors: ShippingErrors = {};
-  if (!form.name.trim()) errors.name = "El nombre es requerido";
-  else if (form.name.trim().length < 2) errors.name = "Mínimo 2 caracteres";
-  if (!form.address.trim()) errors.address = "La dirección es requerida";
-  else if (form.address.trim().length < 4)
-    errors.address = "Mínimo 4 caracteres";
-  if (!form.city.trim()) errors.city = "La ciudad es requerida";
-  else if (form.city.trim().length < 2) errors.city = "Mínimo 2 caracteres";
-  return errors;
-}
+import { useCheckout } from "@/hooks/useCheckout";
+import { formatPrice } from "@/utils/formatting";
 
 export default function CheckoutPage() {
-  const { user, profile } = useAuth();
-  const { state, clear } = useCart();
-  const { products, dispatch: productsDispatch } = useProducts();
-  const navigate = useNavigate();
-  const { error: createError, captureError, clearError } = useFirestoreError();
+  const {
+    cartItems,
+    total,
+    totalUnits,
+    form,
+    errors,
+    isSubmitting,
+    isFormInvalid,
+    createError,
+    handleChange,
+    handleSubmit,
+  } = useCheckout();
 
-  const [form, setForm] = useState<ShippingForm>({
-    name: profile?.name ?? "",
-    address: "",
-    city: "",
-  });
-  const [errors, setErrors] = useState<ShippingErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (state.items.length === 0) {
+  if (cartItems.length === 0) {
     return <Navigate to="/cart" replace />;
   }
-
-  const total = state.items.reduce((acc, i) => acc + i.price * i.quantity, 0);
-  const totalUnits = state.items.reduce((acc, i) => acc + i.quantity, 0);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const updated = { ...form, [e.target.name]: e.target.value };
-    setForm(updated);
-    setErrors(validate(updated));
-    clearError();
-  };
-
-  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!user) return;
-
-    const validationErrors = validate(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const orderItems: OrderItem[] = state.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl,
-      }));
-
-      const orderId = await createOrder({
-        userId: user.uid,
-        items: orderItems,
-        totalPrice: total,
-        shippingInfo: {
-          name: form.name.trim(),
-          address: form.address.trim(),
-          city: form.city.trim(),
-        },
-      });
-
-      orderItems.forEach((item) => {
-        const product = products.find((p) => p.id === item.id);
-        if (product) {
-          productsDispatch({
-            type: "UPDATE",
-            payload: { ...product, stock: product.stock - item.quantity },
-          });
-        }
-      });
-
-      clear();
-      navigate(`/orders/${orderId}`, { replace: true });
-    } catch (err) {
-      captureError(err);
-      setIsSubmitting(false);
-    }
-  };
-
-  const isFormInvalid = Object.keys(errors).length > 0;
 
   return (
     <Container size="lg" className="py-12">
@@ -190,8 +101,11 @@ export default function CheckoutPage() {
               Resumen del pedido
             </h2>
             <ul className="divide-y divide-sepia-300/60 mb-4 -mx-2">
-              {state.items.map((item) => (
-                <li key={item.id} className="flex items-center gap-3 py-2 px-2">
+              {cartItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-3 py-2 px-2"
+                >
                   <img
                     src={item.imageUrl}
                     alt=""

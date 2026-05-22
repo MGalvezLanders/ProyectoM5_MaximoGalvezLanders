@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
@@ -6,76 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
-import { useAuth } from "@/hooks/useAuth";
-import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { getUserOrders } from "@/services/orders.service";
-import type { Order, OrderStatus } from "@/types/order";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendiente",
-  processing: "Enviado",
-  completed: "Entregado",
-  cancelled: "Cancelado",
-};
-
-const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
-  pending: "sun",
-  processing: "sky",
-  completed: "field",
-  cancelled: "danger",
-};
-
-const formatOrderDate = (date: unknown): string => {
-  if (
-    date &&
-    typeof date === "object" &&
-    "toDate" in date &&
-    typeof (date as { toDate: () => Date }).toDate === "function"
-  ) {
-    return (date as { toDate: () => Date })
-      .toDate()
-      .toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-  }
-  return "—";
-};
+import { useUserOrders } from "@/hooks/useUserOrders";
+import { formatPrice, formatOrderDateShort } from "@/utils/formatting";
+import { STATUS_LABELS, STATUS_TONES } from "@/utils/orderStatus";
 
 export default function OrdersPage() {
-  const { user } = useAuth();
-  const { error, captureError, clearError } = useFirestoreError();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    setLoading(true);
-    getUserOrders(user.uid)
-      .then((data) => {
-        if (cancelled) return;
-        setOrders(data);
-        clearError();
-      })
-      .catch((err) => {
-        if (!cancelled) captureError(err);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, captureError, clearError]);
+  const { orders, loading, error } = useUserOrders();
 
   if (loading) {
     return (
@@ -140,7 +75,8 @@ export default function OrdersPage() {
                       Pedido #{order.id.slice(0, 8)}
                     </p>
                     <p className="text-sm text-leather-700">
-                      {formatOrderDate(order.orderDate)} · {order.items.length}{" "}
+                      {formatOrderDateShort(order.orderDate)} ·{" "}
+                      {order.items.length}{" "}
                       {order.items.length === 1 ? "producto" : "productos"}
                     </p>
                   </div>

@@ -123,3 +123,41 @@
   ▎ "El cliente, autenticado como admin, le pide al endpoint /api/s3-presign una URL temporal. El server verifica el ID token de Firebase con firebase-admin, confirma que
   ▎ el email está en ADMIN_EMAILS, y firma una URL con las credenciales AWS que solo vive 60 segundos. El cliente hace PUT directo a S3 con esa URL — el archivo nunca pasa
   ▎  por el server. S3 valida la firma y guarda el objeto. La URL pública del objeto se persiste en Firestore junto con los demás campos del producto."
+
+
+
+  ## Formateo y Principio de Responsabilidad Unica
+  10 archivos nuevos creados:
+
+  ┌──────────────────────────────────┬────────────────────────────────────────────────────────┐
+  │             Archivo              │                    Responsabilidad                     │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ utils/formatting.ts              │ formatPrice, formatOrderDate, formatOrderDateShort     │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ utils/orderStatus.ts             │ STATUS_LABELS, STATUS_TONES                            │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ utils/constants.ts               │ PRODUCT_CATEGORIES                                     │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ utils/product.ts                 │ getStockBadge + tipo StockBadge                        │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ types/productForm.ts             │ Tipos del formulario admin                             │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ types/auth.ts                    │ Tipo UserProfile                                       │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ hooks/admin/useProductForm.ts    │ Toda la lógica de estado, validación y submit del form │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ hooks/useUserOrders.ts           │ Fetch de órdenes del usuario                           │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ hooks/useCheckout.ts             │ Lógica completa del checkout                           │
+  ├──────────────────────────────────┼────────────────────────────────────────────────────────┤
+  │ components/admin/ProductForm.tsx │ JSX del formulario con Field interno                   │
+  └──────────────────────────────────┴────────────────────────────────────────────────────────┘
+
+  7 archivos simplificados:
+  - AdminProductFormPage.tsx 464 → 45 líneas (solo orquesta hook + componente)
+  - CheckoutPage.tsx 220 → 100 líneas (solo presentación)
+  - OrdersPage.tsx — sin lógica de fetch ni constantes inline
+  - OrderDetailPage.tsx — sin formatPrice, STATUS_LABELS, STATUS_TONES ni formatOrderDate
+  - AdminProductsPage.tsx — sin formatPrice local
+  - ProductDetailPage.tsx — sin formatPrice ni getStockBadge locales
+  - AuthContext.tsx — UserProfile viene de types/auth.ts
