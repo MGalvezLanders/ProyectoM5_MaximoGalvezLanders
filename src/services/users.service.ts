@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase.service";
 import type { UserRole } from "../types/user";
 
 type UserProfileData = {

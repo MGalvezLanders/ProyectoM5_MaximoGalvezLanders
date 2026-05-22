@@ -9,7 +9,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase.service";
 import type { Order, OrderInput, OrderStatus } from "../types/order";
 import { canTransition } from "../types/orderStatus";
 
@@ -35,9 +35,7 @@ export const createOrder = async (input: OrderInput): Promise<string> => {
   const orderRef = doc(ordersCollection);
 
   await runTransaction(db, async (tx) => {
-    const productRefs = input.items.map((item) =>
-      doc(db, "products", item.id),
-    );
+    const productRefs = input.items.map((item) => doc(db, "products", item.id));
 
     //* 1. READS — Firestore exige leer todo ANTES de cualquier write.
     const productSnaps = await Promise.all(
@@ -108,9 +106,7 @@ export const updateOrderStatus = async (
   if (!snap.exists()) throw new Error("Orden no encontrada");
   const currentStatus = (snap.data() as Order).status;
   if (!canTransition(currentStatus, newStatus)) {
-    throw new Error(
-      `Transición inválida: "${currentStatus}" → "${newStatus}"`,
-    );
+    throw new Error(`Transición inválida: "${currentStatus}" → "${newStatus}"`);
   }
   await updateDoc(doc(db, "orders", id), { status: newStatus });
 };

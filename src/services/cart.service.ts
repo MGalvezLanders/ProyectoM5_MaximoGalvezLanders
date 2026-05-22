@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase.service";
 import type { CartItem } from "../types/cart";
 
 // Decisión de persistencia: doc top-level `carts/{uid}`.

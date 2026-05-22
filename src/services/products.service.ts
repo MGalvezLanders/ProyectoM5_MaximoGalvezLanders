@@ -14,11 +14,10 @@
   startAt,
   updateDoc,
   where,
-  writeBatch,
   type DocumentSnapshot,
   type QueryConstraint,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase.service";
 import type { Product } from "../types/product";
 
 export type ProductFilters = {
@@ -174,25 +173,3 @@ export const listProducts = async (
   return { items, lastDoc };
 };
 
-/**
- * Backfill: escribe `nameLower` en todos los docs que no lo tengan.
- * Necesario una sola vez para que los productos existentes (creados antes de
- * este campo) aparezcan en `listProducts` (el orderBy(nameLower) excluye docs
- * sin ese campo). Devuelve cuántos documentos se actualizaron.
- */
-export const backfillNameLower = async (): Promise<number> => {
-  const snapshot = await getDocs(productsCollection);
-  const batch = writeBatch(db);
-  let count = 0;
-
-  for (const docSnap of snapshot.docs) {
-    const data = docSnap.data();
-    if (typeof data.nameLower === "string") continue;
-    const name = typeof data.name === "string" ? data.name : "";
-    batch.update(docSnap.ref, { nameLower: name.trim().toLowerCase() });
-    count++;
-  }
-
-  if (count > 0) await batch.commit();
-  return count;
-};
