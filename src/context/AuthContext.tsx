@@ -6,12 +6,12 @@ import {
   register,
   loginWithGoogle,
   logout,
-} from "../services/auth";
+} from "../services/auth.service";
 import {
   createUserProfile,
   getUserProfile,
   updateUserRole,
-} from "../services/users";
+} from "../services/users.service";
 import type { UserRole } from "../types/user";
 import { isAdminEmail } from "../utils/admin";
 
@@ -39,9 +39,9 @@ const resolveProfile = async (
   const email = firebaseUser.email ?? "";
   const shouldBeAdmin = isAdminEmail(email);
 
-  const existing = (await getUserProfile(firebaseUser.uid)) as
-    | UserProfile
-    | null;
+  const existing = (await getUserProfile(
+    firebaseUser.uid,
+  )) as UserProfile | null;
 
   // 1) No existe: crear profile (caso Google o doc borrado)
   if (!existing) {
@@ -91,7 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(email, password);
   };
 
-  const handleRegister = async (email: string, password: string, name: string) => {
+  const handleRegister = async (
+    email: string,
+    password: string,
+    name: string,
+  ) => {
     await register(email, password, name);
   };
 

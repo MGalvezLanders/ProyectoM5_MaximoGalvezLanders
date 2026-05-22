@@ -1,4 +1,4 @@
-import type { ProductInput } from "@/services/products";
+import type { ProductInput } from "@/services/products.service";
 
 const placeholderImg = (text: string) =>
   `https://placehold.co/600x600/8B4513/F5DEB3?text=${encodeURIComponent(text)}`;

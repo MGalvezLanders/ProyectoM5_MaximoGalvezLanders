@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { getUserOrders } from "@/services/orders";
+import { getUserOrders } from "@/services/orders.service";
 import type { Order, OrderStatus } from "@/types/order";
 
 const formatPrice = (price: number) =>
@@ -130,15 +130,17 @@ export default function OrdersPage() {
         {orders.map((order) => (
           <li key={order.id}>
             <Link to={`/orders/${order.id}`} className="block">
-              <Card padded={false} className="p-4 hover:shadow-warm-lg transition-shadow">
+              <Card
+                padded={false}
+                className="p-4 hover:shadow-warm-lg transition-shadow"
+              >
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex-1 min-w-[200px]">
                     <p className="text-xs uppercase tracking-wider text-leather-500 mb-0.5">
                       Pedido #{order.id.slice(0, 8)}
                     </p>
                     <p className="text-sm text-leather-700">
-                      {formatOrderDate(order.orderDate)} ·{" "}
-                      {order.items.length}{" "}
+                      {formatOrderDate(order.orderDate)} · {order.items.length}{" "}
                       {order.items.length === 1 ? "producto" : "productos"}
                     </p>
                   </div>

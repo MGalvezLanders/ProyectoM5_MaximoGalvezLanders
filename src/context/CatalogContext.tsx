@@ -9,7 +9,7 @@ import {
 import {
   listProducts,
   type ListProductsParams,
-} from "@/services/products";
+} from "@/services/products.service";
 import type { Product } from "@/types/product";
 import type { DocumentSnapshot } from "firebase/firestore";
 

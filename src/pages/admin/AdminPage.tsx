@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProducts } from "@/hooks/useProducts";
-import { backfillNameLower } from "@/services/products";
-import { getAllOrders } from "@/services/orders";
+import { backfillNameLower } from "@/services/products.service";
+import { getAllOrders } from "@/services/orders.service";
 import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
 
@@ -14,8 +14,12 @@ type OrderStats = {
 };
 
 export default function AdminPage() {
-  const { products, loading: productsLoading, error: productsError, bulkCreate } =
-    useProducts();
+  const {
+    products,
+    loading: productsLoading,
+    error: productsError,
+    bulkCreate,
+  } = useProducts();
 
   const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -118,13 +122,14 @@ export default function AdminPage() {
           value={outOfStock}
           tone={outOfStock > 0 ? "warn" : "neutral"}
         />
-        <StatCard label="Órdenes totales" value={orderStats?.totalOrders ?? 0} />
+        <StatCard
+          label="Órdenes totales"
+          value={orderStats?.totalOrders ?? 0}
+        />
         <StatCard
           label="Órdenes pendientes"
           value={orderStats?.pendingOrders ?? 0}
-          tone={
-            orderStats && orderStats.pendingOrders > 0 ? "warn" : "neutral"
-          }
+          tone={orderStats && orderStats.pendingOrders > 0 ? "warn" : "neutral"}
         />
       </div>
 

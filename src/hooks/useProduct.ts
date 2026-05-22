@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { ProductsContext } from "@/context/ProductsContext";
-import { getProductById } from "@/services/products";
+import { getProductById } from "@/services/products.service";
 import type { Product } from "@/types/product";
 
 type UseProductResult = {
@@ -16,7 +16,7 @@ export function useProduct(id: string | undefined): UseProductResult {
     throw new Error("useProduct debe usarse dentro de <ProductsProvider>");
   }
 
-  const cached = id ? ctx.state.items.find((p) => p.id === id) ?? null : null;
+  const cached = id ? (ctx.state.items.find((p) => p.id === id) ?? null) : null;
 
   const [fetched, setFetched] = useState<Product | null>(null);
   const [fetchLoading, setFetchLoading] = useState(false);

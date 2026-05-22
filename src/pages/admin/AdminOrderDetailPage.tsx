@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { getOrderById, updateOrderStatus } from "@/services/orders";
+import { getOrderById, updateOrderStatus } from "@/services/orders.service";
 import { transitions } from "@/types/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
 
@@ -80,7 +80,9 @@ export default function AdminOrderDetailPage() {
       await updateOrderStatus(order.id, newStatus);
       setOrder({ ...order, status: newStatus });
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : "Error actualizando el estado");
+      setStatusError(
+        err instanceof Error ? err.message : "Error actualizando el estado",
+      );
     } finally {
       setSaving(false);
     }
@@ -97,7 +99,9 @@ export default function AdminOrderDetailPage() {
   if (error || !order) {
     return (
       <div className="text-center py-12">
-        <p className="text-terracota-500 mb-3">{error ?? "Orden no encontrada"}</p>
+        <p className="text-terracota-500 mb-3">
+          {error ?? "Orden no encontrada"}
+        </p>
         <Link to="/admin/orders">
           <Button variant="outline">Volver a órdenes</Button>
         </Link>
@@ -173,7 +177,10 @@ export default function AdminOrderDetailPage() {
         </h3>
         <ul className="divide-y divide-sepia-300/60">
           {order.items.map((item) => (
-            <li key={item.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+            <li
+              key={item.id}
+              className="flex items-center gap-4 py-3 first:pt-0 last:pb-0"
+            >
               {item.imageUrl && (
                 <img
                   src={item.imageUrl}
@@ -182,7 +189,9 @@ export default function AdminOrderDetailPage() {
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-leather-900 truncate">{item.name}</p>
+                <p className="font-medium text-leather-900 truncate">
+                  {item.name}
+                </p>
                 <p className="text-sm text-leather-600">
                   {item.quantity} × {formatPrice(item.price)}
                 </p>
@@ -202,7 +211,9 @@ export default function AdminOrderDetailPage() {
 
         {isFinal ? (
           <p className="text-sm text-leather-600">
-            Esta orden está en estado final (<strong>{STATUS_LABELS[order.status] ?? order.status}</strong>) y no admite más cambios.
+            Esta orden está en estado final (
+            <strong>{STATUS_LABELS[order.status] ?? order.status}</strong>) y no
+            admite más cambios.
           </p>
         ) : (
           <div className="space-y-2">

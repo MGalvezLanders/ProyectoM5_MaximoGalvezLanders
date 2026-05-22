@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { useCatalog } from "@/context/CatalogContext";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getCategories } from "@/services/products";
+import { getCategories } from "@/services/products.service";
 
 const CatalogPage = () => {
   const [search, setSearch] = useState("");

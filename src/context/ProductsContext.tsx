@@ -13,7 +13,7 @@ import {
   getProducts,
   updateProduct as svcUpdateProduct,
   type ProductInput,
-} from "../services/products";
+} from "../services/products.service";
 import {
   initialProductsState,
   productsReducer,
@@ -50,13 +50,16 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createOne = useCallback(async (input: ProductInput): Promise<string> => {
-    const id = await svcCreateProduct(input);
-    // Releemos el producto recién creado para tener el `createdAt` del server
-    const fresh = await getProductById(id);
-    if (fresh) dispatch({ type: "ADD", payload: fresh });
-    return id;
-  }, []);
+  const createOne = useCallback(
+    async (input: ProductInput): Promise<string> => {
+      const id = await svcCreateProduct(input);
+      // Releemos el producto recién creado para tener el `createdAt` del server
+      const fresh = await getProductById(id);
+      if (fresh) dispatch({ type: "ADD", payload: fresh });
+      return id;
+    },
+    [],
+  );
 
   const updateOne = useCallback(
     async (id: string, input: Partial<ProductInput>): Promise<void> => {

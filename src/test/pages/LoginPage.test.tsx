@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import LoginPage from "../../pages/forms/LoginPage";
-import * as authService from "@/services/auth";
+import * as authService from "@/services/auth.service";
 
 describe("<LoginPage /> (formulario de login)", () => {
   it("renderiza el formulario", () => {

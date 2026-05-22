@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { useProducts } from "@/hooks/useProducts";
-import { getProductById, type ProductInput } from "@/services/products";
+import { getProductById, type ProductInput } from "@/services/products.service";
 import {
   deleteImageByUrl,
   uploadImage,
-} from "@/services/admin/uploadImage";
+} from "@/services/admin/uploadImage.service";
 
 //* ─── Tipos del state machine ───────────────────────────────────────────────
 type FormFields = {
@@ -71,17 +71,13 @@ const CATEGORIES_HINT = [
 ];
 
 //* ─── Validaciones ──────────────────────────────────────────────────────────
-const validateFields = (
-  fields: FormFields,
-  hasImage: boolean,
-): FormErrors => {
+const validateFields = (fields: FormFields, hasImage: boolean): FormErrors => {
   const errors: FormErrors = {};
 
   if (!fields.name.trim()) errors.name = "El nombre es obligatorio";
   if (!fields.description.trim())
     errors.description = "La descripción es obligatoria";
-  if (!fields.category.trim())
-    errors.category = "La categoría es obligatoria";
+  if (!fields.category.trim()) errors.category = "La categoría es obligatoria";
   if (fields.price === "" || Number(fields.price) <= 0)
     errors.price = "El precio debe ser mayor a 0";
   if (fields.stock === "" || Number(fields.stock) < 0)
@@ -101,7 +97,9 @@ export default function AdminProductFormPage() {
   const [state, setState] = useState<FormState>(INITIAL_STATE);
   const [loading, setLoading] = useState(isEditing);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, true>>>({});
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof FormErrors, true>>
+  >({});
 
   //* Para borrar la imagen vieja de S3 si la reemplazan al editar.
   const initialImageUrlRef = useRef<string>("");
@@ -172,7 +170,9 @@ export default function AdminProductFormPage() {
     }));
   };
 
-  const handleBlur = (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleBlur = (
+    e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setTouched((prev) => ({ ...prev, [e.target.name]: true }));
   };
 
@@ -251,7 +251,8 @@ export default function AdminProductFormPage() {
         if (err.message.includes("permission-denied")) {
           message = "No tenés permiso para realizar esta acción";
         } else if (err.message.toLowerCase().includes("cors")) {
-          message = "Error de CORS al subir la imagen — revisar config del bucket";
+          message =
+            "Error de CORS al subir la imagen — revisar config del bucket";
         } else if (err.message) {
           message = err.message;
         }
@@ -277,7 +278,9 @@ export default function AdminProductFormPage() {
 
   //* Solo mostrar errores de campos que el usuario ya tocó
   const visibleErrors: FormErrors = Object.fromEntries(
-    Object.entries(state.errors).filter(([key]) => touched[key as keyof FormErrors])
+    Object.entries(state.errors).filter(
+      ([key]) => touched[key as keyof FormErrors],
+    ),
   ) as FormErrors;
 
   return (
@@ -357,7 +360,11 @@ export default function AdminProductFormPage() {
             </datalist>
           </Field>
 
-          <Field label="Precio (ARS)" htmlFor="price" error={visibleErrors.price}>
+          <Field
+            label="Precio (ARS)"
+            htmlFor="price"
+            error={visibleErrors.price}
+          >
             <input
               id="price"
               name="price"

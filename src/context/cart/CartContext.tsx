@@ -13,7 +13,7 @@ import {
 } from "./cartReducer";
 import { useAuth } from "../../hooks/useAuth";
 import { useFirestoreError } from "../../hooks/errors/useFirestoreError";
-import { getCart, saveCart } from "../../services/cart";
+import { getCart, saveCart } from "../../services/cart.service";
 import type { Product } from "../../types/product";
 
 type CartContextType = {

@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { getOrderById } from "@/services/orders";
+import { getOrderById } from "@/services/orders.service";
 import type { Order, OrderStatus } from "@/types/order";
 
 const formatPrice = (price: number) =>

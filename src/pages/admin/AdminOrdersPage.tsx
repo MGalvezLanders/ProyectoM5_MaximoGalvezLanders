@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { getAllOrders } from "@/services/orders";
+import { getAllOrders } from "@/services/orders.service";
 import type { Order, OrderStatus } from "@/types/order";
 
 const formatPrice = (price: number) =>
@@ -20,10 +20,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   cancelled: "Cancelada",
 };
 
-const STATUS_TONES: Record<
-  OrderStatus,
-  "sun" | "sky" | "field" | "danger"
-> = {
+const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
   pending: "sun",
   processing: "sky",
   completed: "field",
@@ -45,7 +42,9 @@ const formatOrderDate = (date: unknown): string => {
     "toDate" in date &&
     typeof (date as { toDate: () => Date }).toDate === "function"
   ) {
-    return (date as { toDate: () => Date }).toDate().toLocaleDateString("es-AR");
+    return (date as { toDate: () => Date })
+      .toDate()
+      .toLocaleDateString("es-AR");
   }
   return "—";
 };

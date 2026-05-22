@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import RegisterPage from "@/pages/forms/RegisterPage";
-import * as authService from "@/services/auth";
+import * as authService from "@/services/auth.service";
 
 describe("<RegisterPage /> (formulario de registro)", () => {
   it("renderiza el formulario con todos sus campos", () => {
@@ -52,11 +52,15 @@ describe("<RegisterPage /> (formulario de registro)", () => {
     renderWithProviders(<RegisterPage />);
 
     // Inicialmente errors={} → el botón NO está deshabilitado (lazy validation).
-    expect(screen.getByRole("button", { name: /Crear cuenta/i })).not.toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /Crear cuenta/i }),
+    ).not.toBeDisabled();
 
     // Tras tipear algo inválido se ejecuta validate() y aparecen errores.
     await user.type(screen.getByLabelText("Email"), "no-es-email");
-    expect(screen.getByRole("button", { name: /Crear cuenta/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /Crear cuenta/i }),
+    ).toBeDisabled();
   });
 
   it("no llama register si se hace submit con el formulario vacío", async () => {
@@ -68,7 +72,9 @@ describe("<RegisterPage /> (formulario de registro)", () => {
 
     expect(vi.mocked(authService.register)).not.toHaveBeenCalled();
     // Y se muestran los errores de validación.
-    expect(await screen.findByText("El nombre es requerido")).toBeInTheDocument();
+    expect(
+      await screen.findByText("El nombre es requerido"),
+    ).toBeInTheDocument();
   });
 
   it("con datos válidos llama al servicio de register", async () => {
@@ -78,7 +84,10 @@ describe("<RegisterPage /> (formulario de registro)", () => {
     await user.type(screen.getByLabelText("Nombre"), "Maximiliano");
     await user.type(screen.getByLabelText("Email"), "max@example.com");
     await user.type(screen.getByLabelText("Contraseña"), "password123");
-    await user.type(screen.getByLabelText("Confirmar contraseña"), "password123");
+    await user.type(
+      screen.getByLabelText("Confirmar contraseña"),
+      "password123",
+    );
     await user.click(screen.getByRole("button", { name: /Crear cuenta/i }));
 
     await waitFor(() => {

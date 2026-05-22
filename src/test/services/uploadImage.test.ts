@@ -11,7 +11,7 @@ import {
   deleteImageByUrl,
   extractKeyFromUrl,
   uploadImage,
-} from "@/services/admin/uploadImage";
+} from "@/services/admin/uploadImage.service";
 
 // Único mock SDK necesario: getAuth() viene del SDK modular de Firebase, no
 // hace HTTP plano. La lección recomienda vi.mock para SDKs; el resto del flujo
@@ -90,8 +90,9 @@ describe("uploadImage (errores)", () => {
 
   test("usa fallback con status code si /api/s3-presign no devuelve body JSON", async () => {
     server.use(
-      http.post("*/api/s3-presign", () =>
-        new HttpResponse("Internal Server Error", { status: 500 }),
+      http.post(
+        "*/api/s3-presign",
+        () => new HttpResponse("Internal Server Error", { status: 500 }),
       ),
     );
 
@@ -102,12 +103,14 @@ describe("uploadImage (errores)", () => {
 
   test("parsea el XML de error de S3 (AccessDenied) y lo expone en el mensaje", async () => {
     server.use(
-      http.put(`${FAKE_S3_HOST}/*`, () =>
-        new HttpResponse(
-          `<?xml version="1.0" encoding="UTF-8"?>
+      http.put(
+        `${FAKE_S3_HOST}/*`,
+        () =>
+          new HttpResponse(
+            `<?xml version="1.0" encoding="UTF-8"?>
 <Error><Code>AccessDenied</Code><Message>Request has expired</Message></Error>`,
-          { status: 403, headers: { "Content-Type": "application/xml" } },
-        ),
+            { status: 403, headers: { "Content-Type": "application/xml" } },
+          ),
       ),
     );
 

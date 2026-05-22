@@ -8,7 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { useProducts } from "@/hooks/useProducts";
-import { createOrder } from "@/services/orders";
+import { createOrder } from "@/services/orders.service";
 import type { OrderItem } from "@/types/order";
 
 const formatPrice = (price: number) =>
@@ -26,7 +26,8 @@ function validate(form: ShippingForm): ShippingErrors {
   if (!form.name.trim()) errors.name = "El nombre es requerido";
   else if (form.name.trim().length < 2) errors.name = "Mínimo 2 caracteres";
   if (!form.address.trim()) errors.address = "La dirección es requerida";
-  else if (form.address.trim().length < 4) errors.address = "Mínimo 4 caracteres";
+  else if (form.address.trim().length < 4)
+    errors.address = "Mínimo 4 caracteres";
   if (!form.city.trim()) errors.city = "La ciudad es requerida";
   else if (form.city.trim().length < 2) errors.city = "Mínimo 2 caracteres";
   return errors;
