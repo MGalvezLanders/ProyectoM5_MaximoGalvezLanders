@@ -54,6 +54,8 @@ vi.mock("@/services/products", () => ({
   createProduct: vi.fn().mockResolvedValue("mock-product-id"),
   updateProduct: vi.fn().mockResolvedValue(undefined),
   deleteProduct: vi.fn().mockResolvedValue(undefined),
+  listProducts: vi.fn().mockResolvedValue({ items: [], lastDoc: null }),
+  backfillNameLower: vi.fn().mockResolvedValue(0),
 }));
 
 // Firestore users: funciones llamadas sólo cuando hay usuario logueado.

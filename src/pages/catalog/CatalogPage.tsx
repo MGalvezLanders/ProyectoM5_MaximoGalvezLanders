@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
-import { useProducts } from "@/hooks/useProducts";
+import { useCatalog } from "@/context/CatalogContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getCategories } from "@/services/products";
 
@@ -13,16 +13,38 @@ const CatalogPage = () => {
   const [categories, setCategories] = useState<string[]>([]);
 
   const debouncedSearch = useDebounce(search, 400);
-  const { products, loading, error, refetch } = useProducts({
-    category,
-    search: debouncedSearch,
-  });
+  const {
+    products,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadFirstPage,
+    loadMore,
+  } = useCatalog();
+
+  // El prefijo de búsqueda se aplica en Firestore solo con 2+ caracteres.
+  const searchPrefix = debouncedSearch.trim();
+
+  // Cada vez que cambian los filtros, recargamos desde la primera página.
+  useEffect(() => {
+    loadFirstPage({
+      category,
+      searchPrefix: searchPrefix.length >= 2 ? searchPrefix : undefined,
+    });
+  }, [category, searchPrefix, loadFirstPage]);
 
   useEffect(() => {
     getCategories()
       .then(setCategories)
       .catch(() => setCategories([]));
   }, []);
+
+  const refetch = () =>
+    loadFirstPage({
+      category,
+      searchPrefix: searchPrefix.length >= 2 ? searchPrefix : undefined,
+    });
 
   const handleClearFilters = () => {
     setSearch("");
@@ -157,6 +179,22 @@ const CatalogPage = () => {
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              {hasMore ? (
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? "Cargando..." : "Cargar más"}
+                </Button>
+              ) : (
+                <p className="text-sm text-leather-500">
+                  No hay más productos.
+                </p>
+              )}
             </div>
           </>
         )}

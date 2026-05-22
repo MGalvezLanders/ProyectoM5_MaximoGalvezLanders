@@ -9,4 +9,6 @@ export type Product = {
   imageUrl: string;
   stock: number;
   createdAt: Timestamp;
+  /** name en minúsculas, para ordenar y buscar por prefijo en Firestore. */
+  nameLower?: string;
 };

@@ -1,14 +1,22 @@
-import {
+﻿import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  endAt,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   serverTimestamp,
+  startAfter,
+  startAt,
   updateDoc,
   where,
+  writeBatch,
+  type DocumentSnapshot,
+  type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Product } from "../types/product";
@@ -83,6 +91,7 @@ export const getCategories = async (): Promise<string[]> => {
 export const createProduct = async (input: ProductInput): Promise<string> => {
   const ref = await addDoc(productsCollection, {
     ...input,
+    nameLower: input.name.trim().toLowerCase(),
     createdAt: serverTimestamp(),
   });
   return ref.id;
@@ -92,9 +101,98 @@ export const updateProduct = async (
   id: string,
   input: Partial<ProductInput>,
 ): Promise<void> => {
-  await updateDoc(doc(db, "products", id), input);
+  const patch: Record<string, unknown> = { ...input };
+  // Mantener nameLower sincronizado cuando cambia el nombre.
+  if (typeof input.name === "string") {
+    patch.nameLower = input.name.trim().toLowerCase();
+  }
+  await updateDoc(doc(db, "products", id), patch);
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
   await deleteDoc(doc(db, "products", id));
+};
+
+//* ─── Listado paginado (server-side, con cursor) ─────────────────────────────
+export type ListProductsParams = {
+  category?: string;
+  /** Prefijo de búsqueda; se aplica sobre nameLower (mín. 2 caracteres). */
+  searchPrefix?: string;
+  pageSize?: number;
+  cursor?: DocumentSnapshot | null;
+};
+
+export type ListProductsResult = {
+  items: Product[];
+  /** Último doc de la página, para usar como cursor en la siguiente llamada. */
+  lastDoc: DocumentSnapshot | null;
+};
+
+/**
+ * Trae una página de productos ordenados por nombre.
+ *
+ * Paginación por cursor: pasá el `lastDoc` de la página anterior como `cursor`
+ * para traer la siguiente. La búsqueda por prefijo y el filtro por categoría se
+ * resuelven en Firestore (no en cliente).
+ *
+ * NOTA: combinar `category` + `orderBy(nameLower)` requiere un índice compuesto.
+ * La primera vez que se ejecute, la consola del navegador imprime un link para
+ * crearlo con un clic.
+ */
+export const listProducts = async (
+  params: ListProductsParams = {},
+): Promise<ListProductsResult> => {
+  const { category, searchPrefix, pageSize = 10, cursor = null } = params;
+
+  const constraints: QueryConstraint[] = [];
+
+  if (category) {
+    constraints.push(where("category", "==", category));
+  }
+
+  // Ordenamos por nameLower: habilita el orden alfabético estable que necesita
+  // la paginación por cursor y la búsqueda por prefijo.
+  constraints.push(orderBy("nameLower"));
+
+  const prefix = searchPrefix?.trim().toLowerCase();
+  if (prefix && prefix.length >= 2) {
+    const HIGH = String.fromCharCode(0xf8ff);
+    constraints.push(startAt(prefix));
+    constraints.push(endAt(prefix + HIGH));
+  }
+
+  if (cursor) {
+    constraints.push(startAfter(cursor));
+  }
+
+  constraints.push(limit(pageSize));
+
+  const snapshot = await getDocs(query(productsCollection, ...constraints));
+  const items = snapshot.docs.map(mapDoc);
+  const lastDoc = snapshot.docs.at(-1) ?? null;
+
+  return { items, lastDoc };
+};
+
+/**
+ * Backfill: escribe `nameLower` en todos los docs que no lo tengan.
+ * Necesario una sola vez para que los productos existentes (creados antes de
+ * este campo) aparezcan en `listProducts` (el orderBy(nameLower) excluye docs
+ * sin ese campo). Devuelve cuántos documentos se actualizaron.
+ */
+export const backfillNameLower = async (): Promise<number> => {
+  const snapshot = await getDocs(productsCollection);
+  const batch = writeBatch(db);
+  let count = 0;
+
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data();
+    if (typeof data.nameLower === "string") continue;
+    const name = typeof data.name === "string" ? data.name : "";
+    batch.update(docSnap.ref, { nameLower: name.trim().toLowerCase() });
+    count++;
+  }
+
+  if (count > 0) await batch.commit();
+  return count;
 };

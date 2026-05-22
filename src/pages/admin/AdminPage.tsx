@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProducts } from "@/hooks/useProducts";
+import { backfillNameLower } from "@/services/products";
 import { getAllOrders } from "@/services/orders";
 import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
@@ -21,6 +22,8 @@ export default function AdminPage() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+  const [backfillMessage, setBackfillMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +62,25 @@ export default function AdminPage() {
       );
     } finally {
       setIsSeeding(false);
+    }
+  };
+
+  const handleBackfill = async () => {
+    setIsBackfilling(true);
+    setBackfillMessage(null);
+    try {
+      const count = await backfillNameLower();
+      setBackfillMessage(
+        count > 0
+          ? `✔ Se actualizaron ${count} productos con nameLower.`
+          : "✔ Todos los productos ya tenían nameLower.",
+      );
+    } catch (err) {
+      setBackfillMessage(
+        `✖ Error: ${err instanceof Error ? err.message : "no se pudo backfillear"}`,
+      );
+    } finally {
+      setIsBackfilling(false);
     }
   };
 
@@ -134,6 +156,22 @@ export default function AdminPage() {
           </Button>
           {seedMessage && (
             <p className="mt-2 text-sm text-leather-700">{seedMessage}</p>
+          )}
+
+          <p className="text-sm text-leather-600 mt-4 mb-3">
+            Escribe el campo <code>nameLower</code> en los productos que no lo
+            tengan. Necesario para que el catálogo paginado (orderBy nameLower)
+            los liste. Corré esto una vez sobre los productos viejos.
+          </p>
+          <Button
+            onClick={handleBackfill}
+            disabled={isBackfilling}
+            variant="outline"
+          >
+            {isBackfilling ? "Procesando..." : "Backfill nameLower"}
+          </Button>
+          {backfillMessage && (
+            <p className="mt-2 text-sm text-leather-700">{backfillMessage}</p>
           )}
         </div>
       )}

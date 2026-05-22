@@ -20,6 +20,7 @@ import { AdminRoute } from "./AdminRoute";
 import { Navbar } from "@/components/Navbar";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ProductsProvider } from "@/context/ProductsContext";
+import { CatalogProvider } from "@/context/CatalogContext";
 import { CartProvider } from "@/context/cart/CartContext";
 
 const AppRouter = () => {
@@ -33,7 +34,14 @@ const AppRouter = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
+            <Route
+              path="/catalog"
+              element={
+                <CatalogProvider>
+                  <CatalogPage />
+                </CatalogProvider>
+              }
+            />
             <Route path="/products/:id" element={<ProductDetailPage />} />
 
             {/* Protegidas: requieren usuario logueado */}
