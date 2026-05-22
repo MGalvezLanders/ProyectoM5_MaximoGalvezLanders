@@ -7,6 +7,7 @@ import { FormField } from "@/components/login-register/FormField";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
+import { useProducts } from "@/hooks/useProducts";
 import { createOrder } from "@/services/orders";
 import type { OrderItem } from "@/types/order";
 
@@ -34,6 +35,7 @@ function validate(form: ShippingForm): ShippingErrors {
 export default function CheckoutPage() {
   const { user, profile } = useAuth();
   const { state, clear } = useCart();
+  const { products, dispatch: productsDispatch } = useProducts();
   const navigate = useNavigate();
   const { error: createError, captureError, clearError } = useFirestoreError();
 
@@ -88,6 +90,16 @@ export default function CheckoutPage() {
           address: form.address.trim(),
           city: form.city.trim(),
         },
+      });
+
+      orderItems.forEach((item) => {
+        const product = products.find((p) => p.id === item.id);
+        if (product) {
+          productsDispatch({
+            type: "UPDATE",
+            payload: { ...product, stock: product.stock - item.quantity },
+          });
+        }
       });
 
       clear();
