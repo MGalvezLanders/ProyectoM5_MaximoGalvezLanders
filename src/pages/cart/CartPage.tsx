@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/product/Card";
+import { Button } from "@/components/button/Button";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useCart } from "@/hooks/useCart";
@@ -46,7 +46,9 @@ export default function CartPage() {
 
   return (
     <Container size="lg" className="py-12">
-      <BackButton variant="back" className="mb-4">Seguir comprando</BackButton>
+      <BackButton variant="back" className="mb-4">
+        Seguir comprando
+      </BackButton>
       <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
         Tu carrito
       </h1>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
-import { ProductCard } from "@/components/ProductCard";
-import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
+import { Button } from "@/components/button/Button";
+import { ProductCard } from "@/components/product/ProductCard";
+import { ProductCardSkeleton } from "@/components/product/ProductCardSkeleton";
 import { useCatalog } from "@/context/CatalogContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getCategories } from "@/services/products.service";

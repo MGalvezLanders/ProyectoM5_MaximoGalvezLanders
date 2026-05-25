@@ -3,13 +3,15 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Logo } from "@/components/ui/Logo";
-import { Button } from "@/components/ui/Button";
-
+import { Button } from "@/components/button/Button";
 
 export function Navbar() {
   const { user, profile, logout } = useAuth();
   const { state: cartState } = useCart();
-  const cartCount = cartState.items.reduce((acc: number, item: { quantity: number }) => acc + item.quantity, 0);
+  const cartCount = cartState.items.reduce(
+    (acc: number, item: { quantity: number }) => acc + item.quantity,
+    0,
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -188,11 +190,7 @@ export function Navbar() {
                   </NavLink>
                 )}
                 <div className="pt-2 mt-1 border-t border-sepia-300/60">
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onClick={handleLogout}
-                  >
+                  <Button variant="outline" fullWidth onClick={handleLogout}>
                     Cerrar sesión
                   </Button>
                 </div>

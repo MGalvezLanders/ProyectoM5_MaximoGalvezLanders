@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { getOrderById, updateOrderStatus } from "@/services/orders.service";
 import { transitions } from "@/types/orderStatus";

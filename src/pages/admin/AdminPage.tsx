@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { getAllOrders } from "@/services/orders.service";

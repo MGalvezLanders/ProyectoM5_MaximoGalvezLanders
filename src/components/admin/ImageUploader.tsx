@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 
 type ImageUploaderProps = {
   //* URL existente del producto (Firestore) — se muestra como preview hasta
@@ -38,7 +38,9 @@ export function ImageUploader({
     setLocalError(null);
 
     if (file.size > MAX_BYTES) {
-      setLocalError(`Archivo demasiado grande. Máx: ${MAX_BYTES / 1024 / 1024} MB`);
+      setLocalError(
+        `Archivo demasiado grande. Máx: ${MAX_BYTES / 1024 / 1024} MB`,
+      );
       if (inputRef.current) inputRef.current.value = "";
       return;
     }

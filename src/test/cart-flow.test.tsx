@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Routes, Route } from "react-router-dom";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/components/product/ProductCard";
 import CartPage from "@/pages/cart/CartPage";
 import { mockProduct, mockFirebaseUser } from "@/test/fixtures";
 
@@ -28,7 +28,10 @@ function TestApp() {
 describe("flujo agregar al carrito → ver carrito → checkout", () => {
   it("recorre el flujo completo", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<TestApp />, { initialEntries: ["/"], mockUser: mockFirebaseUser });
+    renderWithProviders(<TestApp />, {
+      initialEntries: ["/"],
+      mockUser: mockFirebaseUser,
+    });
 
     // 1) Arranca con el carrito vacío.
     expect(screen.getByText(/Tu carrito está vacío/i)).toBeInTheDocument();

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 
 describe("<Button />", () => {
   it("renderiza el texto del children", () => {
@@ -35,7 +35,9 @@ describe("<Button />", () => {
   });
 
   it("type='submit' envía el formulario", async () => {
-    const handleSubmit = vi.fn((e: React.SyntheticEvent<HTMLFormElement>) => e.preventDefault());
+    const handleSubmit = vi.fn((e: React.SyntheticEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    );
     const user = userEvent.setup();
     render(
       <form onSubmit={handleSubmit}>

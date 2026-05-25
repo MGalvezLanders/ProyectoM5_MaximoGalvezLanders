@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/product/Card";
+import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
@@ -94,7 +94,9 @@ export default function OrderDetailPage() {
 
   return (
     <Container size="lg" className="py-12">
-      <BackButton variant="back" className="mb-6">Volver a mis pedidos</BackButton>
+      <BackButton variant="back" className="mb-6">
+        Volver a mis pedidos
+      </BackButton>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="font-display text-3xl font-bold text-leather-900 mb-1">

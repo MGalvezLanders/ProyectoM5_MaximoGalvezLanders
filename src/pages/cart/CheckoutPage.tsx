@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/product/Card";
+import { Button } from "@/components/button/Button";
 import { FormField } from "@/components/login-register/FormField";
 import { useCheckout } from "@/hooks/useCheckout";
 import { formatPrice } from "@/utils/formatting";
@@ -102,10 +102,7 @@ export default function CheckoutPage() {
             </h2>
             <ul className="divide-y divide-sepia-300/60 mb-4 -mx-2">
               {cartItems.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-3 py-2 px-2"
-                >
+                <li key={item.id} className="flex items-center gap-3 py-2 px-2">
                   <img
                     src={item.imageUrl}
                     alt=""

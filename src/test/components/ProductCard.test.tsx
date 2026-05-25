@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
-import { ProductCard } from "../../components/ProductCard";
-import { mockProduct, mockProductOutOfStock, mockFirebaseUser } from "@/test/fixtures";
+import { ProductCard } from "../../components/product/ProductCard";
+import {
+  mockProduct,
+  mockProductOutOfStock,
+  mockFirebaseUser,
+} from "@/test/fixtures";
 
 describe("<ProductCard />", () => {
   it("muestra nombre, categoría y precio formateado", () => {
@@ -16,7 +20,9 @@ describe("<ProductCard />", () => {
 
   it("al hacer click en Agregar pasa a estado 'Agregado'", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ProductCard product={mockProduct} />, { mockUser: mockFirebaseUser });
+    renderWithProviders(<ProductCard product={mockProduct} />, {
+      mockUser: mockFirebaseUser,
+    });
 
     const button = screen.getByRole("button", { name: "Agregar" });
     await user.click(button);

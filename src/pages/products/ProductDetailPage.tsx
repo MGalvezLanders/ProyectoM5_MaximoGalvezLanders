@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { QuantityInput } from "@/components/ui/QuantityInput";
@@ -13,7 +13,7 @@ import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/utils/formatting";
 import { getStockBadge } from "@/utils/stockBadge";
 import type { Product } from "@/types/product";
-import {useAuth} from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -69,7 +69,7 @@ const ProductDetailPage = () => {
 };
 
 function ProductDetailContent({ product }: { product: Product }) {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const { addItem } = useCart();
@@ -88,7 +88,9 @@ function ProductDetailContent({ product }: { product: Product }) {
 
   return (
     <>
-      <BackButton variant="backCatalog" className="mb-6">Volver al catálogo</BackButton>
+      <BackButton variant="backCatalog" className="mb-6">
+        Volver al catálogo
+      </BackButton>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {/* Imagen */}
         <div className="bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm">
@@ -178,7 +180,6 @@ function ProductDetailContent({ product }: { product: Product }) {
           </p>
         </div>
       </div>
-
     </>
   );
 }

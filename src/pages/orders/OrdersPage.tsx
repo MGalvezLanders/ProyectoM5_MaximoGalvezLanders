@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/product/Card";
+import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
@@ -54,7 +54,9 @@ export default function OrdersPage() {
 
   return (
     <Container size="lg" className="py-12">
-      <BackButton variant="backHome" className="mb-4">Volver al inicio</BackButton>
+      <BackButton variant="backHome" className="mb-4">
+        Volver al inicio
+      </BackButton>
       <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
         Mis pedidos
       </h1>

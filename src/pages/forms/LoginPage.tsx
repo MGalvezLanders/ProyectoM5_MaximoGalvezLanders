@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import { FormField } from "@/components/login-register/FormField";
 import { GoogleSignInButton } from "@/components/login-register/GoogleSignInButton";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/button/Button";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 
 export default function LoginPage() {
