@@ -18,6 +18,7 @@ import AdminOrderDetailPage from "@/pages/admin/AdminOrderDetailPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminRoute } from "./AdminRoute";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ProductsProvider } from "@/context/ProductsContext";
 import { CatalogProvider } from "@/context/CatalogContext";
@@ -76,6 +77,7 @@ const AppRouter = () => {
 
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          <Footer />
         </CartProvider>
       </ProductsProvider>
     </BrowserRouter>
