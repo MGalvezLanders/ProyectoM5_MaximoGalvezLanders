@@ -6,8 +6,10 @@ import {
   register,
   loginWithGoogle,
   logout,
+  updateUserDisplayName,
+  changeUserPassword,
 } from "../services/auth.service";
-import { resolveOrCreateProfile } from "../services/users.service";
+import { resolveOrCreateProfile, updateUserName } from "../services/users.service";
 import type { UserProfile } from "../types/auth";
 
 type AuthContextType = {
@@ -18,6 +20,8 @@ type AuthContextType = {
   register: (email: string, password: string, name: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  updateName: (name: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -61,6 +65,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  const handleUpdateName = async (name: string) => {
+    if (!user) throw new Error("No hay sesión activa");
+    const trimmed = name.trim();
+    await updateUserDisplayName(trimmed);
+    await updateUserName(user.uid, trimmed);
+    setProfile((prev) => (prev ? { ...prev, name: trimmed } : prev));
+  };
+
+  const handleChangePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
+    await changeUserPassword(currentPassword, newPassword);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -71,6 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register: handleRegister,
         loginWithGoogle: handleLoginWithGoogle,
         logout: handleLogout,
+        updateName: handleUpdateName,
+        changePassword: handleChangePassword,
       }}
     >
       {children}

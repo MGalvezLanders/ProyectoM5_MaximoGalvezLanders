@@ -25,6 +25,13 @@ export const updateUserRole = async (
   await updateDoc(doc(db, "users", uid), { role });
 };
 
+export const updateUserName = async (
+  uid: string,
+  name: string,
+): Promise<void> => {
+  await updateDoc(doc(db, "users", uid), { name });
+};
+
 export const resolveOrCreateProfile = async (
   firebaseUser: FirebaseUser,
 ): Promise<UserProfile> => {

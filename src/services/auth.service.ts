@@ -6,6 +6,9 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
   type User,
   type NextOrObserver,
 } from "firebase/auth";
@@ -43,3 +46,19 @@ export const logout = () => signOut(auth);
 
 export const onAuthChange = (callback: NextOrObserver<User>) =>
   onAuthStateChanged(auth, callback);
+
+export const updateUserDisplayName = async (name: string): Promise<void> => {
+  if (!auth.currentUser) throw new Error("No hay sesión activa");
+  await updateProfile(auth.currentUser, { displayName: name });
+};
+
+export const changeUserPassword = async (
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user || !user.email) throw new Error("No hay sesión activa");
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
+};
