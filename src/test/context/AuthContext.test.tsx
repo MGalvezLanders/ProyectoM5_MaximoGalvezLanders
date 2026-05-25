@@ -14,14 +14,14 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 // después de cada test para no contaminar los siguientes.
 afterEach(() => {
   vi.mocked(authService.onAuthChange).mockImplementation((cb) => {
-    cb(null);
+    (cb as (u: unknown) => void)(null);
     return () => {};
   });
 });
 
 function mockLoggedIn(uid = "test-uid", email = "a@b.com") {
   vi.mocked(authService.onAuthChange).mockImplementationOnce((cb) => {
-    cb({ uid, email } as never);
+    (cb as (u: unknown) => void)({ uid, email });
     return () => {};
   });
   vi.mocked(usersService.resolveOrCreateProfile).mockResolvedValue({
@@ -66,7 +66,7 @@ describe("AuthContext", () => {
     vi.mocked(usersService.updateUserName).mockResolvedValue(undefined);
 
     vi.mocked(authService.onAuthChange).mockImplementationOnce((cb) => {
-      cb({ uid: "u1", email: "x@y.com" } as never);
+      (cb as (u: unknown) => void)({ uid: "u1", email: "x@y.com" });
       return () => {};
     });
     vi.mocked(usersService.resolveOrCreateProfile).mockResolvedValue({

@@ -4,7 +4,6 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import {
   ProductsProvider,
   ProductsStateContext,
-  ProductsActionsContext,
 } from "@/context/ProductsContext";
 import { useProductsActions } from "@/hooks/products/useProductsActions";
 import { useContext } from "react";
@@ -76,7 +75,6 @@ describe("ProductsContext — acciones CRUD", () => {
     await act(async () => {
       await result.current.actions.createOne({
         name: "Termo Stanley",
-        nameLower: "termo stanley",
         description: "",
         price: 8000,
         category: "termos",
@@ -168,8 +166,8 @@ describe("ProductsContext — acciones CRUD", () => {
     let count = 0;
     await act(async () => {
       count = await result.current.actions.bulkCreate([
-        { name: "Mate A", nameLower: "mate a", description: "", price: 1, category: "mates", imageUrl: "", stock: 1 },
-        { name: "Mate B", nameLower: "mate b", description: "", price: 2, category: "mates", imageUrl: "", stock: 1 },
+        { name: "Mate A", description: "", price: 1, category: "mates", imageUrl: "", stock: 1 },
+        { name: "Mate B", description: "", price: 2, category: "mates", imageUrl: "", stock: 1 },
       ]);
     });
 
