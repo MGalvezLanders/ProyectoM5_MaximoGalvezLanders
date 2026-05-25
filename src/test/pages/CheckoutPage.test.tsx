@@ -45,6 +45,8 @@ function renderCheckout({
             register: async () => {},
             loginWithGoogle: async () => {},
             logout: async () => {},
+            updateName: async () => {},
+            changePassword: async () => {},
           }}
         >
           <ProductsActionsContext.Provider

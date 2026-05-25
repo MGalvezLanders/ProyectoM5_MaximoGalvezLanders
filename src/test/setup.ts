@@ -24,14 +24,16 @@ vi.mock("@/services/firebase.service", () => ({
 // callback con `null` y devuelve un unsubscribe no-op. Los tests que necesiten
 // un usuario logueado pueden re-mockear este módulo con vi.mock/vi.mocked.
 vi.mock("@/services/auth.service", () => ({
-  onAuthChange: (cb: (user: unknown) => void) => {
+  onAuthChange: vi.fn((cb: (user: unknown) => void) => {
     cb(null);
     return () => {};
-  },
+  }),
   login: vi.fn(),
   register: vi.fn(),
   loginWithGoogle: vi.fn(),
   logout: vi.fn(),
+  updateUserDisplayName: vi.fn().mockResolvedValue(undefined),
+  changeUserPassword: vi.fn().mockResolvedValue(undefined),
 }));
 
 // AWS SDK: solo se usa server-side (Vercel Functions en /api). El cliente sube
@@ -64,6 +66,8 @@ vi.mock("@/services/users.service", () => ({
   getUserProfile: vi.fn().mockResolvedValue(null),
   createUserProfile: vi.fn().mockResolvedValue(undefined),
   updateUserRole: vi.fn().mockResolvedValue(undefined),
+  updateUserName: vi.fn().mockResolvedValue(undefined),
+  resolveOrCreateProfile: vi.fn().mockResolvedValue(null),
 }));
 
 // Carrito: por defecto vacío. Tests individuales pueden re-mockear con vi.mocked().

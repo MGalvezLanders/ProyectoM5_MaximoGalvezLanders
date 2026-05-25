@@ -47,6 +47,8 @@ export function renderWithProviders(
               register: async () => {},
               loginWithGoogle: async () => {},
               logout: async () => {},
+              updateName: async () => {},
+              changePassword: async () => {},
             }}
           >
             {cart}
