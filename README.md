@@ -82,12 +82,11 @@ La aplicación está pensada como una solución **escalable y mantenible**, cons
 
 | Vista | Captura |
 |-------|---------|
-| Home / Catálogo | _pendiente_ |
-| Detalle de producto | _pendiente_ |
-| Carrito | _pendiente_ |
-| Checkout | _pendiente_ |
-| Panel admin — productos | _pendiente_ |
-| Panel admin — órdenes | _pendiente_ |
+| Home | ![Home](public/Home.png) |
+| Catálogo | ![Catalog](public/Catalog.png) |
+| Detalle de producto | ![Detalle de producto](public/detalle-producto.png) |
+| Carrito | ![Carrito](public/cart.png) |
+| Checkout | ![Checkout](public/checkout.png) |
 
 ---
 
@@ -230,26 +229,69 @@ npm install
 
 ```js
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------
+    // users/{uid}
+    // -------------------------------------------------------------------
+    // Cada usuario lee y escribe únicamente su propio documento de perfil.
+    // El perfil guarda `role`: 'customer' (default) o 'admin'. Sólo se asigna
+    // admin manualmente desde la consola de Firebase, jamás desde la app.
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+
+    // -------------------------------------------------------------------
+    // products/{productId}
+    // -------------------------------------------------------------------
+    // Lectura pública (catálogo navegable sin login).
+    // Create/delete: solo admin. Update: admin para cualquier campo, o
+    // cualquier autenticado SOLO si decrementa el campo `stock` (checkout).
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow create, delete: if request.auth != null
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        || (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+          && request.resource.data.stock is int
+          && request.resource.data.stock >= 0
+          && request.resource.data.stock < resource.data.stock
+        )
+      );
     }
+
+    // -------------------------------------------------------------------
+    // carts/{uid}
+    // -------------------------------------------------------------------
+    // Cada usuario lee y escribe únicamente su propio carrito.
+    match /carts/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // -------------------------------------------------------------------
+    // orders/{orderId}
+    // -------------------------------------------------------------------
+    // - Lectura: el dueño de la orden o un admin.
+    // - Create: cualquier usuario autenticado, siempre que la orden se cree
+    //   con su propio userId (impide crear órdenes a nombre de otros).
+    // - Update: solo admin (cambio de status). El cliente nunca modifica
+    //   sus órdenes una vez creadas.
     match /orders/{orderId} {
       allow read: if request.auth != null
         && (resource.data.userId == request.auth.uid
             || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
       allow update: if request.auth != null
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
+
 ```
 
 ### 4. Configurar AWS S3
