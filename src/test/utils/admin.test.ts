@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isAdminEmail } from "@/utils/admin";
+import { isAdminEmail } from "@/utils/admin/admin";
 
 // En el entorno de tests VITE_ADMIN_EMAILS no está definido (import.meta.env lo
 // resuelve a undefined → ""). La lista de admins queda vacía, por lo que la

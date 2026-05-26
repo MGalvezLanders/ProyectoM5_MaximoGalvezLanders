@@ -1,10 +1,10 @@
 import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { useProductsActions } from "@/hooks/products/useProductsActions";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { createOrder } from "@/services/orders.service";
+import { createOrder } from "@/services/order/orders.service";
 import type { OrderItem, ShippingInfo } from "@/types/order";
 
 function validate(form: ShippingInfo): Partial<ShippingInfo> {

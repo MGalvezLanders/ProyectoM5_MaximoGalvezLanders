@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { type ReactNode } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { CatalogProvider, useCatalog } from "@/context/CatalogContext";
-import { listProducts } from "@/services/products.service";
+import { listProducts } from "@/services/product/products.service";
 import { makeProduct } from "@/test/fixtures";
 
 const wrapper = ({ children }: { children: ReactNode }) => (

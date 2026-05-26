@@ -3,7 +3,10 @@ import type { Product } from "@/types/product";
 
 // Timestamp de Firestore casteado: en tests no necesitamos la clase real,
 // solo un objeto con la forma esperada.
-const fakeTimestamp = { seconds: 0, nanoseconds: 0 } as unknown as Product["createdAt"];
+const fakeTimestamp = {
+  seconds: 0,
+  nanoseconds: 0,
+} as unknown as Product["createdAt"];
 
 export const mockFirebaseUser = {
   uid: "test-uid",

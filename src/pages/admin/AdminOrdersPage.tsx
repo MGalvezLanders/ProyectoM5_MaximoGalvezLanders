@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { getAllOrders } from "@/services/orders.service";
+import { getAllOrders } from "@/services/order/orders.service";
 import type { Order, OrderStatus } from "@/types/order";
 
 const formatPrice = (price: number) =>

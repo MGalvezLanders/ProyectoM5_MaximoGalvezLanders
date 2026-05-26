@@ -9,9 +9,9 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { BackButton } from "@/components/button/BackButton";
 import { useProduct } from "@/hooks/products/useProduct";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { formatPrice } from "@/utils/formatting";
-import { getStockBadge } from "@/utils/stockBadge";
+import { getStockBadge } from "@/utils/order/stockBadge";
 import type { Product } from "@/types/product";
 import { useAuth } from "@/hooks/useAuth";
 

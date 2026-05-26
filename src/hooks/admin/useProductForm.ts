@@ -8,12 +8,12 @@ import {
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
-import { getProductById } from "@/services/products.service";
+import { getProductById } from "@/services/product/products.service";
 import {
   deleteImageByUrl,
   uploadImage,
 } from "@/services/admin/uploadImage.service";
-import type { ProductInput } from "@/services/products.service";
+import type { ProductInput } from "@/services/product/products.service";
 import type {
   ProductFormErrors,
   ProductFormFields,

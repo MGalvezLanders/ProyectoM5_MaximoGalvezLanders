@@ -12,8 +12,8 @@ import {
   type User,
   type NextOrObserver,
 } from "firebase/auth";
-import { auth } from "./firebase.service";
-import { createUserProfile } from "./users.service";
+import { auth } from "./config/firebase.service";
+import { createUserProfile } from "./user/users.service";
 
 const googleProvider = new GoogleAuthProvider();
 

@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { ProductsStateContext } from "@/context/ProductsContext";
-import type { ProductFilters } from "@/services/products.service";
+import type { ProductFilters } from "@/services/product/products.service";
 
 export function useProductsList(filters: ProductFilters = {}) {
   const ctx = useContext(ProductsStateContext);

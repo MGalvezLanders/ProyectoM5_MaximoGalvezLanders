@@ -1,8 +1,8 @@
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import type { User as FirebaseUser } from "firebase/auth";
-import { db } from "./firebase.service";
-import { isAdminEmail } from "../utils/admin";
-import type { UserProfile } from "../types/auth";
+import { db } from "../config/firebase.service";
+import { isAdminEmail } from "@/utils/admin/admin";
+import type { UserProfile } from "@/types/auth";
 
 export const createUserProfile = async (
   uid: string,

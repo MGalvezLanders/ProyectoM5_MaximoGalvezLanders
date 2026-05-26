@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebase.service";
-import type { CartItem } from "../types/cart";
+import { db } from "../config/firebase.service";
+import type { CartItem } from "@/types/cart";
 
 // Decisión de persistencia: doc top-level `carts/{uid}`.
 // - Por-usuario real (sincroniza entre dispositivos), no por-dispositivo como localStorage.

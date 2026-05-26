@@ -7,7 +7,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useUserOrders } from "@/hooks/useUserOrders";
 import { formatPrice, formatOrderDateShort } from "@/utils/formatting";
-import { STATUS_LABELS, STATUS_TONES } from "@/utils/orderStatus";
+import { STATUS_LABELS, STATUS_TONES } from "@/utils/order/orderStatus";
 import { BackButton } from "@/components/button/BackButton";
 
 export default function OrdersPage() {

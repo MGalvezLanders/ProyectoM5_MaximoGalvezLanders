@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import CartPage from "../../pages/cart/CartPage";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { mockProduct } from "@/test/fixtures";
 
 // Capturamos la API del carrito para sembrar items DESPUÉS del montaje,

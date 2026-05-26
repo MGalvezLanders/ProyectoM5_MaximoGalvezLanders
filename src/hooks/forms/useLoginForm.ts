@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./useAuth";
-import { useAuthError } from "./errors/useAuthError";
+import { useAuth } from "../useAuth";
+import { useAuthError } from "../errors/useAuthError";
 
 type FormState = { email: string; password: string };
 type FormErrors = Partial<FormState>;

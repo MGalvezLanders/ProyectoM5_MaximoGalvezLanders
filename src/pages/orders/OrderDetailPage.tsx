@@ -9,9 +9,9 @@ import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { BackButton } from "@/components/button/BackButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { getOrderById } from "@/services/orders.service";
+import { getOrderById } from "@/services/order/orders.service";
 import { formatPrice, formatOrderDate } from "@/utils/formatting";
-import { STATUS_LABELS, STATUS_TONES } from "@/utils/orderStatus";
+import { STATUS_LABELS, STATUS_TONES } from "@/utils/order/orderStatus";
 import type { Order } from "@/types/order";
 
 export default function OrderDetailPage() {

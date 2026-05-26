@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
-import { getUserOrders } from "@/services/orders.service";
+import { getUserOrders } from "@/services/order/orders.service";
 import type { Order } from "@/types/order";
 
 export function useUserOrders() {

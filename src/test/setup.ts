@@ -15,7 +15,7 @@ afterAll(() => server.close());
 
 // Firebase: nunca inicializamos el SDK real en tests. Reemplazamos el módulo
 // que exporta `auth` y `db` por stubs vacíos.
-vi.mock("@/services/firebase.service", () => ({
+vi.mock("@/services/config/firebase.service", () => ({
   auth: {},
   db: {},
 }));
@@ -49,9 +49,7 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
 }));
 
 // Productos: evita cualquier llamada a Firestore durante tests de UI.
-// Importante: el módulo real es `products.service` (no `products`); este
-// mock necesita matchear ese path exacto para interceptar los imports.
-vi.mock("@/services/products.service", () => ({
+vi.mock("@/services/product/products.service", () => ({
   getProducts: vi.fn().mockResolvedValue([]),
   getProductById: vi.fn().mockResolvedValue(null),
   getCategories: vi.fn().mockResolvedValue([]),
@@ -62,7 +60,7 @@ vi.mock("@/services/products.service", () => ({
 }));
 
 // Firestore users: funciones llamadas sólo cuando hay usuario logueado.
-vi.mock("@/services/users.service", () => ({
+vi.mock("@/services/user/users.service", () => ({
   getUserProfile: vi.fn().mockResolvedValue(null),
   createUserProfile: vi.fn().mockResolvedValue(undefined),
   updateUserRole: vi.fn().mockResolvedValue(undefined),
@@ -71,13 +69,13 @@ vi.mock("@/services/users.service", () => ({
 }));
 
 // Carrito: por defecto vacío. Tests individuales pueden re-mockear con vi.mocked().
-vi.mock("@/services/cart.service", () => ({
+vi.mock("@/services/cart/cart.service", () => ({
   getCart: vi.fn().mockResolvedValue([]),
   saveCart: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Órdenes: devuelve un id ficticio para no conectar a Firestore.
-vi.mock("@/services/orders.service", () => ({
+vi.mock("@/services/order/orders.service", () => ({
   createOrder: vi.fn().mockResolvedValue("mock-order-id"),
   getAllOrders: vi.fn().mockResolvedValue([]),
   getUserOrders: vi.fn().mockResolvedValue([]),

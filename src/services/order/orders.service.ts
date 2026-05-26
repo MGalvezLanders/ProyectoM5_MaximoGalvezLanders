@@ -9,9 +9,9 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "./firebase.service";
-import type { Order, OrderInput, OrderStatus } from "../types/order";
-import { canTransition } from "../types/orderStatus";
+import { db } from "../config/firebase.service";
+import type { Order, OrderInput, OrderStatus } from "@/types/order";
+import { canTransition } from "@/types/orderStatus";
 
 const ordersCollection = collection(db, "orders");
 

@@ -4,7 +4,7 @@ import { act, renderHook } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/cart/CartContext";
-import { useCart } from "../../hooks/useCart";
+import { useCart } from "../../hooks/cart/useCart";
 import { mockProduct } from "@/test/fixtures";
 
 const wrapper = ({ children }: { children: ReactNode }) => (
@@ -42,7 +42,10 @@ describe("useCart", () => {
     });
 
     expect(result.current.state.items).toHaveLength(1);
-    expect(result.current.state.items[0]).toMatchObject({ id: "p1", quantity: 2 });
+    expect(result.current.state.items[0]).toMatchObject({
+      id: "p1",
+      quantity: 2,
+    });
   });
 
   it("removeItem y clear vacían el carrito", () => {

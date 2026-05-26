@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Container } from "@/components/ui/Container";
-import { FormField } from "@/components/login-register/FormField";
+import { FormField } from "@/components/forms/FormField";
 import { Button } from "@/components/button/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthError } from "@/hooks/errors/useAuthError";
@@ -21,14 +21,22 @@ function Avatar({ name, email }: { name: string; email: string }) {
         {initials}
       </div>
       <div>
-        <p className="font-display text-xl font-bold text-leather-900">{name || "Sin nombre"}</p>
+        <p className="font-display text-xl font-bold text-leather-900">
+          {name || "Sin nombre"}
+        </p>
         <p className="text-sm text-leather-600">{email}</p>
       </div>
     </div>
   );
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="bg-cream-50 border border-sepia-300 rounded-xl p-6 shadow-warm-sm">
       <h2 className="font-display text-lg font-semibold text-leather-900 mb-4 pb-3 border-b border-sepia-200">
@@ -62,7 +70,11 @@ const ProfilePage = () => {
   const [nameValue, setNameValue] = useState(profile?.name ?? "");
   const [nameSuccess, setNameSuccess] = useState(false);
   const [nameSaving, setNameSaving] = useState(false);
-  const { error: nameError, captureError: captureNameError, clearError: clearNameError } = useAuthError();
+  const {
+    error: nameError,
+    captureError: captureNameError,
+    clearError: clearNameError,
+  } = useAuthError();
 
   // Change password
   const [pwForm, setPwForm] = useState({
@@ -72,10 +84,15 @@ const ProfilePage = () => {
   });
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const { error: pwError, captureError: capturePwError, clearError: clearPwError } = useAuthError();
+  const {
+    error: pwError,
+    captureError: capturePwError,
+    clearError: clearPwError,
+  } = useAuthError();
   const [pwConfirmError, setPwConfirmError] = useState("");
 
-  const isEmailProvider = user?.providerData.some((p) => p.providerId === "password") ?? false;
+  const isEmailProvider =
+    user?.providerData.some((p) => p.providerId === "password") ?? false;
 
   const memberSince = user?.metadata.creationTime
     ? new Date(user.metadata.creationTime).toLocaleDateString("es-AR", {
@@ -133,7 +150,9 @@ const ProfilePage = () => {
   return (
     <main className="paper-texture min-h-[calc(100vh-65px)]">
       <Container size="md" className="py-10 space-y-6">
-        <h1 className="font-display text-3xl font-bold text-leather-900">Mi perfil</h1>
+        <h1 className="font-display text-3xl font-bold text-leather-900">
+          Mi perfil
+        </h1>
 
         {/* Resumen */}
         <SectionCard title="Información de la cuenta">
@@ -142,15 +161,14 @@ const ProfilePage = () => {
           </div>
           <InfoRow label="Email" value={profile.email} />
           <InfoRow label="Nombre" value={profile.name || "—"} />
-          <InfoRow label="Rol" value={ROLE_LABELS[profile.role] ?? profile.role} />
+          <InfoRow
+            label="Rol"
+            value={ROLE_LABELS[profile.role] ?? profile.role}
+          />
           <InfoRow label="Miembro desde" value={memberSince} />
           <InfoRow
             label="Proveedor"
-            value={
-              isEmailProvider
-                ? "Email y contraseña"
-                : "Google"
-            }
+            value={isEmailProvider ? "Email y contraseña" : "Google"}
           />
         </SectionCard>
 
@@ -172,11 +190,17 @@ const ProfilePage = () => {
               error={nameError ?? undefined}
             />
             {nameSuccess && (
-              <p className="text-sm text-emerald-600 mb-3">Nombre actualizado correctamente.</p>
+              <p className="text-sm text-emerald-600 mb-3">
+                Nombre actualizado correctamente.
+              </p>
             )}
             <Button
               type="submit"
-              disabled={nameSaving || !nameValue.trim() || nameValue.trim() === profile.name}
+              disabled={
+                nameSaving ||
+                !nameValue.trim() ||
+                nameValue.trim() === profile.name
+              }
             >
               {nameSaving ? "Guardando…" : "Guardar nombre"}
             </Button>
@@ -186,7 +210,11 @@ const ProfilePage = () => {
         {/* Cambiar contraseña — solo para usuarios email/password */}
         {isEmailProvider && (
           <SectionCard title="Cambiar contraseña">
-            <form onSubmit={handleChangePassword} noValidate className="space-y-0">
+            <form
+              onSubmit={handleChangePassword}
+              noValidate
+              className="space-y-0"
+            >
               <FormField
                 id="pw-current"
                 label="Contraseña actual"
@@ -229,11 +257,15 @@ const ProfilePage = () => {
                 error={pwConfirmError || undefined}
               />
               {pwSuccess && (
-                <p className="text-sm text-emerald-600 mb-3">Contraseña actualizada correctamente.</p>
+                <p className="text-sm text-emerald-600 mb-3">
+                  Contraseña actualizada correctamente.
+                </p>
               )}
               <Button
                 type="submit"
-                disabled={pwSaving || !pwForm.current || !pwForm.next || !pwForm.confirm}
+                disabled={
+                  pwSaving || !pwForm.current || !pwForm.next || !pwForm.confirm
+                }
               >
                 {pwSaving ? "Actualizando…" : "Cambiar contraseña"}
               </Button>

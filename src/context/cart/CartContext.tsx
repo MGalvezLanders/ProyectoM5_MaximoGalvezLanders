@@ -10,11 +10,11 @@ import {
   cartReducer,
   initialCartState,
   type CartState,
-} from "./cartReducer";
-import { useAuth } from "../../hooks/useAuth";
-import { useFirestoreError } from "../../hooks/errors/useFirestoreError";
-import { getCart, saveCart } from "../../services/cart.service";
-import type { Product } from "../../types/product";
+} from "@/reducers/cartReducer";
+import { useAuth } from "@/hooks/useAuth";
+import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
+import { getCart, saveCart } from "@/services/cart/cart.service";
+import type { Product } from "@/types/product";
 
 type CartContextType = {
   state: CartState;

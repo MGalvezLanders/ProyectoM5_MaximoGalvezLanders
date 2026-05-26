@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { useLoginForm } from "@/hooks/useLoginForm";
-import { FormField } from "@/components/login-register/FormField";
-import { GoogleSignInButton } from "@/components/login-register/GoogleSignInButton";
+import { useLoginForm } from "@/hooks/forms/useLoginForm";
+import { FormField } from "@/components/forms/FormField";
+import { GoogleSignInButton } from "@/components/button/GoogleSignInButton";
 import { Button } from "@/components/button/Button";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 

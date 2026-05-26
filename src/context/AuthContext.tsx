@@ -8,9 +8,9 @@ import {
   logout,
   updateUserDisplayName,
   changeUserPassword,
-} from "../services/auth.service";
-import { resolveOrCreateProfile, updateUserName } from "../services/users.service";
-import type { UserProfile } from "../types/auth";
+} from "@/services/auth.service";
+import { resolveOrCreateProfile, updateUserName } from "@/services/user/users.service";
+import type { UserProfile } from "@/types/auth";
 
 type AuthContextType = {
   user: FirebaseUser | null;

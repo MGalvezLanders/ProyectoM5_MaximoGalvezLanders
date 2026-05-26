@@ -4,7 +4,7 @@ import { Card } from "@/components/product/Card";
 import { Button } from "@/components/button/Button";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { BackButton } from "@/components/button/BackButton";
 
 const formatPrice = (price: number) =>

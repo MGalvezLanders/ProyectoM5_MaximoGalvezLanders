@@ -16,7 +16,7 @@ import {HomePage,
     AdminOrdersPage,
     AdminOrderDetailPage} from "@/pages";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { AdminRoute } from "./AdminRoute";
+import { AdminRoute } from "./admin/AdminRoute";
 import { Navbar, Footer, AdminLayout } from "@/components";
 import { ProductsProvider, CatalogProvider, CartProvider } from "@/context";
 

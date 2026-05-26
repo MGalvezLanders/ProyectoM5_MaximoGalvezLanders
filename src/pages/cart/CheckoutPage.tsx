@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/product/Card";
 import { Button } from "@/components/button/Button";
-import { FormField } from "@/components/login-register/FormField";
+import { FormField } from "@/components/forms/FormField";
 import { useCheckout } from "@/hooks/useCheckout";
 import { formatPrice } from "@/utils/formatting";
 

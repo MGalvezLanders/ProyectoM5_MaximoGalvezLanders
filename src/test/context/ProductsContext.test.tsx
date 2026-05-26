@@ -7,7 +7,7 @@ import {
 } from "@/context/ProductsContext";
 import { useProductsActions } from "@/hooks/products/useProductsActions";
 import { useContext } from "react";
-import * as productsSvc from "@/services/products.service";
+import * as productsSvc from "@/services/product/products.service";
 import { makeProduct } from "@/test/fixtures";
 
 const wrapper = ({ children }: { children: ReactNode }) => (

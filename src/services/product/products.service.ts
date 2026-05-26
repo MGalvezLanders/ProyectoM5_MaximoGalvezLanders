@@ -17,8 +17,8 @@
   type DocumentSnapshot,
   type QueryConstraint,
 } from "firebase/firestore";
-import { db } from "./firebase.service";
-import type { Product } from "../types/product";
+import { db } from "../config/firebase.service";
+import type { Product } from "@/types/product";
 
 export type ProductFilters = {
   category?: string;
@@ -172,4 +172,3 @@ export const listProducts = async (
 
   return { items, lastDoc };
 };
-

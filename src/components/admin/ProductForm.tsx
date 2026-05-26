@@ -2,7 +2,7 @@ import type { ChangeEvent, FocusEvent, ReactNode, SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/button/Button";
 import { ImageUploader } from "@/components/admin/ImageUploader";
-import { PRODUCT_CATEGORIES } from "@/utils/constants";
+import { PRODUCT_CATEGORIES } from "@/utils/categories";
 import type {
   ProductFormErrors,
   ProductFormFields,

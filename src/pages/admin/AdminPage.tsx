@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
-import { getAllOrders } from "@/services/orders.service";
+import { getAllOrders } from "@/services/order/orders.service";
 import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
 

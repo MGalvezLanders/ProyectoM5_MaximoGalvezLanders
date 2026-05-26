@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { renderWithProviders, userEvent } from "@/test/utils";
 import CartPage from "@/pages/cart/CartPage";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { mockProduct, makeProduct } from "@/test/fixtures";
 
 // CartItem no está extraído como componente separado: vive inline en CartPage.
@@ -102,9 +102,7 @@ describe("CartItem (a través de CartPage)", () => {
     );
     act(() => cart.addItem(mockProduct));
 
-    await user.click(
-      screen.getByRole("button", { name: /Vaciar carrito/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Vaciar carrito/i }));
 
     expect(screen.getByText(/Tu carrito está vacío/i)).toBeInTheDocument();
   });

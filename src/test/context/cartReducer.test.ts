@@ -3,7 +3,7 @@ import {
   cartReducer,
   initialCartState,
   type CartState,
-} from "../../context/cart/cartReducer";
+} from "@/reducers/cartReducer";
 import { mockProduct, makeProduct } from "@/test/fixtures";
 import type { CartItem } from "@/types/cart";
 

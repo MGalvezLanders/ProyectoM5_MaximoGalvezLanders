@@ -8,7 +8,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { CartContext } from "@/context/cart/CartContext";
 import { ProductsActionsContext } from "@/context/ProductsContext";
 import CheckoutPage from "@/pages/cart/CheckoutPage";
-import { createOrder } from "@/services/orders.service";
+import { createOrder } from "@/services/order/orders.service";
 import type { CartItem } from "@/types/cart";
 import { mockProduct, mockFirebaseUser } from "@/test/fixtures";
 
