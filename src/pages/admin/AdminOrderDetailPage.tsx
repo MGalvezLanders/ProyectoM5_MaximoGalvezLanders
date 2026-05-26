@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/button/Button";
-import { Spinner } from "@/components/ui/Spinner";
+import { Badge, Button, Spinner } from "@/components";
 import {
   getOrderById,
   updateOrderStatus,

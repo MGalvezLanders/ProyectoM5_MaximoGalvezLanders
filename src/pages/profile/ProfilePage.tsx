@@ -60,7 +60,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
-  customer: "Cliente",
+  customer: "Defender el proyecto con mi vida",
 };
 
 const ProfilePage = () => {

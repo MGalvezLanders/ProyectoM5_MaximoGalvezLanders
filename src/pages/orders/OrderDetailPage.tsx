@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/product/Card";
-import { Button } from "@/components/button/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Spinner } from "@/components/ui/Spinner";
-import { SolDeMayo } from "@/components/ui/SolDeMayo";
-import { BackButton } from "@/components/button/BackButton";
+import { Container, Card, Button, Badge, Spinner, SolDeMayo, BackButton } from "@/components";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { getOrderById } from "@/services/order/orders.service";

@@ -1,3 +1,10 @@
 export { Navbar } from "./section/Navbar";
 export { Footer } from "./section/Footer";
 export { AdminLayout } from "./admin/AdminLayout";
+export { Container } from "./ui/Container";
+export { Card } from "./product/Card";
+export { Button } from "./button/Button";
+export { Badge } from "./ui/Badge";
+export { Spinner } from "./ui/Spinner";
+export { SolDeMayo } from "./ui/SolDeMayo";
+export { BackButton } from "./button/BackButton";

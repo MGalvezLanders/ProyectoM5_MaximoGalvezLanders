@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
-    <footer className="bg-leather-900 text-cream-100 border-t border-leather-700">
+    <footer className="bg-leather-900  text-cream-100 border-t border-leather-700">
       {/* Franja patria decorativa */}
-      <div className="h-1 band-argentina opacity-60" />
+      <div className="h-4 band-argentina opacity-80" />
 
       <div className="px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
