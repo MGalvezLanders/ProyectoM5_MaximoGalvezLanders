@@ -1,0 +1,16 @@
+export { default as HomePage } from "./HomePage";
+export { default as LoginPage } from "./forms/LoginPage";
+export { default as RegisterPage } from "./forms/RegisterPage";
+export { default as CatalogPage } from "./catalog/CatalogPage";
+export { default as ProductDetailPage } from "./products/ProductDetailPage";
+export { default as ProfilePage } from "./ProfilePage";
+export { default as CartPage } from "./cart/CartPage";
+export { default as CheckoutPage } from "./cart/CheckoutPage";
+export { default as OrdersPage } from "./orders/OrdersPage";
+export { default as OrderDetailPage } from "./orders/OrderDetailPage";
+export { default as NotFoundPage } from "./NotFoundPage";
+export { default as AdminPage } from "./admin/AdminPage";
+export { default as AdminProductsPage } from "./admin/AdminProductsPage";
+export { default as AdminProductFormPage } from "./admin/AdminProductFormPage";
+export { default as AdminOrdersPage } from "./admin/AdminOrdersPage";
+export { default as AdminOrderDetailPage } from "./admin/AdminOrderDetailPage";
