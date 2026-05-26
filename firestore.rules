@@ -35,6 +35,14 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------
+    // carts/{uid}
+    // -------------------------------------------------------------------
+    // Cada usuario lee y escribe únicamente su propio carrito.
+    match /carts/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // -------------------------------------------------------------------
     // orders/{orderId}
     // -------------------------------------------------------------------
     // - Lectura: el dueño de la orden o un admin.
