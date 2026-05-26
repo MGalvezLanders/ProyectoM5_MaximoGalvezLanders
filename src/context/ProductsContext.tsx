@@ -13,12 +13,13 @@ import {
   getProducts,
   updateProduct as svcUpdateProduct,
   type ProductInput,
-} from "../services/products.service";
+} from "@/services/product/products.service";
 import {
   initialProductsState,
   productsReducer,
   type ProductsState,
-} from "../reducers/productsReducer";
+} from "@/reducers/productsReducer";
+import type { Product } from "@/types/product";
 
 export type ProductsStateContextType = {
   state: ProductsState;
@@ -64,12 +65,15 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createOne = useCallback(async (input: ProductInput): Promise<string> => {
-    const id = await svcCreateProduct(input);
-    const fresh = await getProductById(id);
-    if (fresh) dispatch({ type: "ADD", payload: fresh });
-    return id;
-  }, []);
+  const createOne = useCallback(
+    async (input: ProductInput): Promise<string> => {
+      const id = await svcCreateProduct(input);
+      const fresh = await getProductById(id);
+      if (fresh) dispatch({ type: "ADD", payload: fresh });
+      return id;
+    },
+    [],
+  );
 
   const updateOne = useCallback(
     async (id: string, input: Partial<ProductInput>): Promise<void> => {
@@ -90,7 +94,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       const ids = await Promise.all(inputs.map((p) => svcCreateProduct(p)));
       const fresh = (
         await Promise.all(ids.map((id) => getProductById(id)))
-      ).filter((p): p is NonNullable<typeof p> => p !== null);
+      ).filter((p: Product | null): p is Product => p !== null);
       dispatch({ type: "ADD_MANY", payload: fresh });
       return fresh.length;
     },
