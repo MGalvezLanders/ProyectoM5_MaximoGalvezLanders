@@ -17,12 +17,8 @@ import {HomePage,
     AdminOrderDetailPage} from "@/pages";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminRoute } from "./AdminRoute";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { AdminLayout } from "@/components/admin/AdminLayout";
-import { ProductsProvider } from "@/context/ProductsContext";
-import { CatalogProvider } from "@/context/CatalogContext";
-import { CartProvider } from "@/context/cart/CartContext";
+import { Navbar, Footer, AdminLayout } from "@/components";
+import { ProductsProvider, CatalogProvider, CartProvider } from "@/context";
 
 const AppRouter = () => {
   return (
