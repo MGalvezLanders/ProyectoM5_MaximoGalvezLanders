@@ -123,25 +123,6 @@ export default function AdminPage() {
         </Link>
       </div>
 
-      {import.meta.env.DEV && (
-        <div className="border-t border-sepia-300 pt-6">
-          <h3 className="font-display text-lg font-bold mb-1">Dev tools</h3>
-          <p className="text-sm text-leather-600 mb-3">
-            Sube {MOCK_PRODUCTS.length} productos hardcodeados a Firestore con
-            imágenes placeholder (no requiere S3). Solo visible en dev.
-          </p>
-          <Button
-            onClick={handleSeedMock}
-            disabled={isSeeding}
-            variant="outline"
-          >
-            {isSeeding ? "Subiendo..." : "Subir productos mock"}
-          </Button>
-          {seedMessage && (
-            <p className="mt-2 text-sm text-leather-700">{seedMessage}</p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

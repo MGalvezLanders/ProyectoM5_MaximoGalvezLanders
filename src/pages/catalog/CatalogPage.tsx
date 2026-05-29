@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductCardSkeleton } from "@/components/product/ProductCardSkeleton";
 import { useCatalog } from "@/context/CatalogContext";
+import { useProductsList } from "@/hooks/products/useProductsList";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getCategories } from "@/services/product/products.service";
+import { matchProductFuzzy } from "@/utils/filters";
 import { fadeUp, stagger } from "@/utils/animations";
 
 const CatalogPage = () => {
@@ -14,27 +16,43 @@ const CatalogPage = () => {
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [categories, setCategories] = useState<string[]>([]);
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search, 250);
+
+  //* Catálogo paginado por Firestore — modo "browse" cuando no hay búsqueda.
   const {
-    products,
-    loading,
+    products: browseProducts,
+    loading: browseLoading,
     loadingMore,
-    error,
+    error: browseError,
     hasMore,
     loadFirstPage,
     loadMore,
   } = useCatalog();
 
-  // El prefijo de búsqueda se aplica en Firestore solo con 2+ caracteres.
-  const searchPrefix = debouncedSearch.trim();
+  //* Todos los productos cargados globalmente — modo "search" (fuzzy, en cliente).
+  const {
+    products: allProducts,
+    loading: allLoading,
+    error: allError,
+  } = useProductsList();
 
-  // Cada vez que cambian los filtros, recargamos desde la primera página.
+  const trimmedSearch = debouncedSearch.trim();
+  const isSearching = trimmedSearch.length >= 2;
+
+  //* Búsqueda tolerante (plurales y acentos) sobre TODO el catálogo, ignorando
+  //* la categoría seleccionada — el usuario pidió: "el buscador busca entre
+  //* todos los productos ignorando si está filtrando o no".
+  const searchResults = useMemo(() => {
+    if (!isSearching) return [];
+    return allProducts.filter((p) => matchProductFuzzy(p, trimmedSearch));
+  }, [allProducts, trimmedSearch, isSearching]);
+
+  //* Disparamos la carga paginada solo cuando NO hay búsqueda. Mientras se
+  //* busca, el catálogo paginado queda congelado para no hacer fetch al pedo.
   useEffect(() => {
-    loadFirstPage({
-      category,
-      searchPrefix: searchPrefix.length >= 2 ? searchPrefix : undefined,
-    });
-  }, [category, searchPrefix, loadFirstPage]);
+    if (isSearching) return;
+    loadFirstPage({ category, searchPrefix: undefined });
+  }, [category, isSearching, loadFirstPage]);
 
   useEffect(() => {
     getCategories()
@@ -43,15 +61,18 @@ const CatalogPage = () => {
   }, []);
 
   const refetch = () =>
-    loadFirstPage({
-      category,
-      searchPrefix: searchPrefix.length >= 2 ? searchPrefix : undefined,
-    });
+    loadFirstPage({ category, searchPrefix: undefined });
 
   const handleClearFilters = () => {
     setSearch("");
     setCategory(undefined);
   };
+
+  //* Vista unificada: en modo búsqueda, los datos vienen del context global.
+  const products = isSearching ? searchResults : browseProducts;
+  const loading = isSearching ? allLoading : browseLoading;
+  const error = isSearching ? allError : browseError;
+  const showLoadMore = !isSearching && hasMore;
 
   return (
     <main className="paper-texture min-h-[calc(100vh-65px)]">
@@ -193,8 +214,9 @@ const CatalogPage = () => {
               transition={{ duration: 0.4 }}
             >
               {products.length} producto{products.length === 1 ? "" : "s"}
-              {category && ` en "${category}"`}
-              {debouncedSearch && ` para "${debouncedSearch}"`}
+              {isSearching
+                ? ` para "${debouncedSearch}" en todo el catálogo`
+                : category && ` en "${category}"`}
             </motion.p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
@@ -203,7 +225,7 @@ const CatalogPage = () => {
             </div>
 
             <div className="mt-10 flex justify-center">
-              {hasMore ? (
+              {showLoadMore ? (
                 <Button
                   variant="outline"
                   onClick={loadMore}
@@ -213,7 +235,9 @@ const CatalogPage = () => {
                 </Button>
               ) : (
                 <p className="text-sm text-leather-500">
-                  No hay más productos.
+                  {isSearching
+                    ? "Estos son todos los resultados."
+                    : "No hay más productos."}
                 </p>
               )}
             </div>
