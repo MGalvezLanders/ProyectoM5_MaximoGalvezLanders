@@ -18,9 +18,11 @@
     "@aws-sdk/s3-request-presigner": "^3.1049.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.10.0",
+    "motion": "^12.40.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1",
+    "sonner": "^2.0.7",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
@@ -32,7 +34,7 @@
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vercel/node": "^5.8.2",
+    "@vercel/node": "^4.0.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.7",
     "eslint": "^10.3.0",
@@ -43,7 +45,7 @@
     "msw": "^2.14.6",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vercel": "^54.1.0",
+    "vercel": "^54.6.1",
     "vite": "^8.0.12",
     "vitest": "^4.1.6"
   }
