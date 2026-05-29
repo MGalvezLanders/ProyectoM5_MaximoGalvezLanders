@@ -20,7 +20,7 @@ import {
 } from "@/pages";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminRoute } from "./admin/AdminRoute";
-import { Navbar, Footer, AdminLayout } from "@/components";
+import { Navbar, Footer, AdminLayout, CartDrawer } from "@/components";
 import { ProductsProvider, CatalogProvider, CartProvider } from "@/context";
 
 function AnimatedRoutes() {
@@ -93,6 +93,7 @@ const AppRouter = () => {
       <ProductsProvider>
         <CartProvider>
           <Navbar />
+          <CartDrawer />
           <AnimatedRoutes />
           <Footer />
         </CartProvider>

@@ -9,3 +9,4 @@ export { Spinner } from "./ui/Spinner";
 export { SolDeMayo } from "./ui/SolDeMayo";
 export { LogoGauchada } from "./ui/LogoGauchada";
 export { BackButton } from "./button/BackButton";
+export { CartDrawer } from "./cart/CartDrawer";

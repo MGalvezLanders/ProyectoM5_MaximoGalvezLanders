@@ -4,6 +4,7 @@ import {
   useEffect,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 import {
@@ -23,6 +24,12 @@ type CartContextType = {
   updateQuantity: (id: string, quantity: number) => void;
   clear: () => void;
   error: string | null;
+  //* Drawer del carrito (se abre solo al agregar un producto).
+  drawerOpen: boolean;
+  /** Id del producto que se acaba de agregar — para resaltarlo en el drawer. */
+  highlightedItemId: string | null;
+  openDrawer: (highlightedItemId?: string | null) => void;
+  closeDrawer: () => void;
 };
 
 export const CartContext = createContext<CartContextType | null>(null);
@@ -32,6 +39,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialCartState);
   const { error, captureError, clearError } = useFirestoreError();
   const isHydratedRef = useRef(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     isHydratedRef.current = false;
@@ -70,6 +81,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((product: Product, quantity?: number) => {
     dispatch({ type: "ADD_ITEM", payload: { product, quantity } });
+    //* Al agregar, mostramos el drawer y resaltamos el producto recién sumado.
+    setHighlightedItemId(product.id);
+    setDrawerOpen(true);
+  }, []);
+
+  const openDrawer = useCallback((id: string | null = null) => {
+    setHighlightedItemId(id);
+    setDrawerOpen(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setHighlightedItemId(null);
   }, []);
 
   const removeItem = useCallback((id: string) => {
@@ -86,7 +110,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ state, addItem, removeItem, updateQuantity, clear, error }}
+      value={{
+        state,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clear,
+        error,
+        drawerOpen,
+        highlightedItemId,
+        openDrawer,
+        closeDrawer,
+      }}
     >
       {children}
     </CartContext.Provider>
