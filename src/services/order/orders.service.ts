@@ -6,7 +6,6 @@ import {
   query,
   runTransaction,
   serverTimestamp,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../config/firebase.service";
@@ -98,15 +97,50 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
   return mapDoc(snapshot);
 };
 
+//* Actualiza el estado de una orden. Si la transición es a "cancelled",
+//* devuelve el stock de cada ítem al producto correspondiente en la misma
+//* transacción (atómico: o se cancela y se restituye todo, o no se hace nada).
 export const updateOrderStatus = async (
   id: string,
   newStatus: OrderStatus,
 ): Promise<void> => {
-  const snap = await getDoc(doc(db, "orders", id));
-  if (!snap.exists()) throw new Error("Orden no encontrada");
-  const currentStatus = (snap.data() as Order).status;
-  if (!canTransition(currentStatus, newStatus)) {
-    throw new Error(`Transición inválida: "${currentStatus}" → "${newStatus}"`);
-  }
-  await updateDoc(doc(db, "orders", id), { status: newStatus });
+  const orderRef = doc(db, "orders", id);
+
+  await runTransaction(db, async (tx) => {
+    //* 1. READS — siempre leer ANTES de cualquier write.
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists()) throw new Error("Orden no encontrada");
+
+    const orderData = orderSnap.data() as Omit<Order, "id">;
+    const currentStatus = orderData.status;
+
+    if (!canTransition(currentStatus, newStatus)) {
+      throw new Error(
+        `Transición inválida: "${currentStatus}" → "${newStatus}"`,
+      );
+    }
+
+    //* Si se cancela, leemos los productos para restituir su stock.
+    const restock = newStatus === "cancelled";
+    const productRefs = restock
+      ? orderData.items.map((item) => doc(db, "products", item.id))
+      : [];
+    const productSnaps = restock
+      ? await Promise.all(productRefs.map((ref) => tx.get(ref)))
+      : [];
+
+    //* 2. WRITES — cambiar estado + (si aplica) devolver stock.
+    tx.update(orderRef, { status: newStatus });
+
+    if (restock) {
+      productSnaps.forEach((snap, i) => {
+        //* Si el producto fue eliminado del catálogo, lo saltamos: no hay
+        //* dónde devolver el stock. El resto de los ítems sigue su curso.
+        if (!snap.exists()) return;
+        const currentStock = (snap.data().stock as number | undefined) ?? 0;
+        const qty = orderData.items[i].quantity;
+        tx.update(productRefs[i], { stock: currentStock + qty });
+      });
+    }
+  });
 };

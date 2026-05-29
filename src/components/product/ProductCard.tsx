@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/button/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/cart/useCart";
 import type { Product } from "@/types/product";
+import { cardReveal } from "@/utils/animations";
 
 type ProductCardProps = {
   product: Product;
@@ -20,12 +23,15 @@ const formatPrice = (price: number) =>
 export function ProductCard({ product }: ProductCardProps) {
   const { user } = useAuth();
   const { addItem } = useCart();
+  const navigate = useNavigate();
   const [justAdded, setJustAdded] = useState(false);
   const outOfStock = product.stock === 0;
 
   const handleAdd = () => {
     if (!user) {
-      alert("Debes iniciar sesión para agregar productos al carrito.");
+      toast.warning("Debes iniciar sesión para agregar al carrito", {
+        action: { label: "Iniciar sesión", onClick: () => navigate("/login") },
+      });
       return;
     }
     addItem(product);
@@ -34,7 +40,13 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <article className="group bg-cream-50 border border-sepia-300 rounded-xl overflow-hidden shadow-warm-sm hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-200">
+    <motion.article
+      variants={cardReveal}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      className="group bg-cream-50 border border-sepia-300 rounded-xl overflow-hidden shadow-warm-sm hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-200"
+    >
       <Link to={`/products/${product.id}`} className="block">
         <div className="aspect-square overflow-hidden bg-cream-100 relative">
           <img
@@ -85,6 +97,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

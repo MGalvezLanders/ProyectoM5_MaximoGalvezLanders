@@ -31,7 +31,7 @@ export default function OrdersPage() {
     return (
       <Container size="md" className="py-16">
         <div className="text-center max-w-md mx-auto">
-          <SolDeMayo className="w-16 h-16 text-sun-500 mx-auto mb-4 opacity-70" />
+          <SolDeMayo className="w-16 h-16 mx-auto mb-4 opacity-70" />
           <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
             Todavía no tenés pedidos
           </h1>

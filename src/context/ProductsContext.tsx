@@ -34,6 +34,9 @@ export type ProductsActionsContextType = {
   syncStockAfterPurchase: (
     items: Array<{ id: string; quantity: number }>,
   ) => void;
+  restoreStockAfterCancel: (
+    items: Array<{ id: string; quantity: number }>,
+  ) => void;
 };
 
 export const ProductsStateContext =
@@ -116,6 +119,21 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const restoreStockAfterCancel = useCallback(
+    (items: Array<{ id: string; quantity: number }>) => {
+      items.forEach(({ id, quantity }) => {
+        const product = itemsRef.current.find((p) => p.id === id);
+        if (product) {
+          dispatch({
+            type: "UPDATE",
+            payload: { ...product, stock: product.stock + quantity },
+          });
+        }
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
@@ -129,6 +147,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           removeOne,
           bulkCreate,
           syncStockAfterPurchase,
+          restoreStockAfterCancel,
         }}
       >
         {children}

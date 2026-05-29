@@ -7,4 +7,5 @@ export { Button } from "./button/Button";
 export { Badge } from "./ui/Badge";
 export { Spinner } from "./ui/Spinner";
 export { SolDeMayo } from "./ui/SolDeMayo";
+export { LogoGauchada } from "./ui/LogoGauchada";
 export { BackButton } from "./button/BackButton";

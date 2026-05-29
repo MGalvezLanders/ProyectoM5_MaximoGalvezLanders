@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { motion } from "motion/react";
+import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -14,6 +16,7 @@ import { formatPrice } from "@/utils/formatting";
 import { getStockBadge } from "@/utils/order/stockBadge";
 import type { Product } from "@/types/product";
 import { useAuth } from "@/hooks/useAuth";
+import { fadeLeft, fadeRight } from "@/utils/animations";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +50,7 @@ const ProductDetailPage = () => {
 
         {!loading && !error && notFound && (
           <div className="text-center py-20 max-w-md mx-auto">
-            <SolDeMayo className="w-16 h-16 text-sun-500 mx-auto mb-4 opacity-70" />
+            <SolDeMayo className="w-16 h-16 mx-auto mb-4 opacity-70" />
             <h1 className="font-display text-3xl font-bold mb-2">
               Producto no encontrado
             </h1>
@@ -70,6 +73,7 @@ const ProductDetailPage = () => {
 
 function ProductDetailContent({ product }: { product: Product }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const { addItem } = useCart();
@@ -78,7 +82,9 @@ function ProductDetailContent({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     if (!user) {
-      alert("Debes iniciar sesión para agregar productos al carrito.");
+      toast.warning("Debes iniciar sesión para agregar al carrito", {
+        action: { label: "Iniciar sesión", onClick: () => navigate("/login") },
+      });
       return;
     }
     addItem(product, quantity);
@@ -93,7 +99,12 @@ function ProductDetailContent({ product }: { product: Product }) {
       </BackButton>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {/* Imagen */}
-        <div className="bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm">
+        <motion.div
+          variants={fadeLeft}
+          initial="hidden"
+          animate="visible"
+          className="bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm"
+        >
           <div className="aspect-square">
             <img
               src={product.imageUrl}
@@ -101,10 +112,15 @@ function ProductDetailContent({ product }: { product: Product }) {
               className="w-full h-full object-cover"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Info */}
-        <div className="flex flex-col">
+        <motion.div
+          variants={fadeRight}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col"
+        >
           <div className="flex items-center gap-2 mb-3">
             <Badge tone="sky" className="capitalize">
               {product.category}
@@ -178,7 +194,7 @@ function ProductDetailContent({ product }: { product: Product }) {
           <p className="mt-4 text-xs text-leather-500 text-center">
             Envíos a todo el país · Pagás cuando lo recibís
           </p>
-        </div>
+        </motion.div>
       </div>
     </>
   );

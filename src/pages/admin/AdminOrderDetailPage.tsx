@@ -7,6 +7,7 @@ import {
 } from "@/services/order/orders.service";
 import { transitions } from "@/types/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
+import { useProductsActions } from "@/hooks/products/useProductsActions";
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("es-AR", {
@@ -49,6 +50,7 @@ export default function AdminOrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const { restoreStockAfterCancel } = useProductsActions();
 
   useEffect(() => {
     if (!id) return;
@@ -79,6 +81,14 @@ export default function AdminOrderDetailPage() {
     setSaving(true);
     try {
       await updateOrderStatus(order.id, newStatus);
+      //* La cancelación restituye stock en Firestore (ver orders.service).
+      //* Reflejamos el mismo delta en el estado local de productos para que
+      //* la UI del admin muestre el stock actualizado sin recargar.
+      if (newStatus === "cancelled") {
+        restoreStockAfterCancel(
+          order.items.map(({ id, quantity }) => ({ id, quantity })),
+        );
+      }
       setOrder({ ...order, status: newStatus });
     } catch (err) {
       setStatusError(

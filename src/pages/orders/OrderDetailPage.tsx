@@ -56,7 +56,7 @@ export default function OrderDetailPage() {
     return (
       <Container size="md" className="py-16">
         <div className="text-center">
-          <SolDeMayo className="w-16 h-16 text-sun-500 mx-auto mb-4 opacity-70" />
+          <SolDeMayo className="w-16 h-16 mx-auto mb-4 opacity-70" />
           <h1 className="font-display text-2xl font-bold mb-2">
             Pedido no encontrado
           </h1>

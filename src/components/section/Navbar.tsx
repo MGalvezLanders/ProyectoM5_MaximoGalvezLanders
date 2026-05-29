@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/cart/useCart";
 import { Logo } from "@/components/ui/Logo";
@@ -72,11 +73,20 @@ export function Navbar() {
                 </NavLink>
                 <NavLink to="/cart" className={desktopLinkClass}>
                   Carrito
-                  {cartCount > 0 && (
-                    <span className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900">
-                      {cartCount}
-                    </span>
-                  )}
+                  <AnimatePresence mode="popLayout">
+                    {cartCount > 0 && (
+                      <motion.span
+                        key={cartCount}
+                        initial={{ scale: 0.4, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.4, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 14 }}
+                        className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900"
+                      >
+                        {cartCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </NavLink>
                 <NavLink to="/orders" className={desktopLinkClass}>
                   Mis pedidos

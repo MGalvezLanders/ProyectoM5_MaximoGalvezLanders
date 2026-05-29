@@ -1,7 +1,10 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
+import { motion, useScroll, useTransform } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
+import { fadeUp, stagger, cardReveal } from "@/utils/animations";
 
 const features = [
   {
@@ -19,29 +22,58 @@ const features = [
 ];
 
 const HomePage = () => {
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollY } = useScroll();
+
+  // Sol de Mayo: rotación y desvanecimiento al hacer scroll
+  const solRotate = useTransform(scrollY, [0, 600], [0, 50]);
+  const solScale = useTransform(scrollY, [0, 400], [1, 1.2]);
+  const solOpacity = useTransform(scrollY, [0, 320], [0.22, 0]);
+
   return (
     <main className="paper-texture min-h-[calc(100vh-65px)]">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 text-sun-400/20 pointer-events-none">
-          <SolDeMayo className="w-80 h-80" />
-        </div>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section ref={heroRef} className="relative overflow-hidden">
+        {/* Sol de Mayo: rayos giran (cara fija) + parallax de scroll */}
+        <motion.div
+          style={{ scale: solScale, opacity: solOpacity }}
+          className="absolute -top-20 -right-20 pointer-events-none select-none"
+        >
+          <SolDeMayo className="w-96 h-96" spin={60} />
+        </motion.div>
 
         <Container size="lg" className="relative py-20 sm:py-28">
-          <div className="max-w-2xl">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-sky-arg-700 mb-4">
+          <motion.div
+            className="max-w-2xl"
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.span
+              variants={fadeUp}
+              className="inline-block text-xs font-semibold tracking-widest uppercase text-sky-arg-700 mb-4"
+            >
               Tradición argentina · desde 2024
-            </span>
-            <h1 className="font-display text-5xl sm:text-6xl font-bold text-leather-900 leading-tight mb-6">
+            </motion.span>
+
+            <motion.h1
+              variants={fadeUp}
+              className="font-display text-5xl sm:text-6xl font-bold text-leather-900 leading-tight mb-6"
+            >
               Pequeños mates,
               <br />
               grandes momentos.
-            </h1>
-            <p className="text-lg text-leather-700 mb-8 max-w-lg">
+            </motion.h1>
+
+            <motion.p
+              variants={fadeUp}
+              className="text-lg text-leather-700 mb-8 max-w-lg"
+            >
               Mates, termos, materas, ponchos y sombreros artesanales. Hechos
               con tradición, pensados para compartir.
-            </p>
-            <div className="flex flex-wrap gap-3">
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
               <Link to="/catalog">
                 <Button size="lg">Ver catálogo</Button>
               </Link>
@@ -50,29 +82,53 @@ const HomePage = () => {
                   Crear cuenta
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </Container>
       </section>
 
-      {/* Features */}
-      <section className="border-t border-sepia-300 bg-cream-100/60">
+      {/* ── Banda argentina animada ───────────────────────────────────────── */}
+      <motion.div
+        className="band-argentina h-2"
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        style={{ originX: 0 }}
+      />
+
+      {/* ── Features ─────────────────────────────────────────────────────── */}
+      <section className="border-b border-sepia-300 bg-cream-100/60">
         <Container size="lg" className="py-16">
-          <div className="grid gap-8 sm:grid-cols-3">
+          <motion.div
+            className="grid gap-8 sm:grid-cols-3"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {features.map((f) => (
-              <div key={f.title} className="text-center sm:text-left">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sun-400 text-leather-900 mb-3">
+              <motion.div
+                key={f.title}
+                variants={cardReveal}
+                className="text-center sm:text-left"
+              >
+                <motion.div
+                  whileHover={{ rotate: 15, scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sun-400 text-leather-900 mb-3 cursor-default"
+                >
                   <SolDeMayo className="w-6 h-6" />
-                </div>
+                </motion.div>
                 <h3 className="font-display text-xl font-semibold mb-2">
                   {f.title}
                 </h3>
                 <p className="text-sm text-leather-700 leading-relaxed">
                   {f.body}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </Container>
       </section>
     </main>

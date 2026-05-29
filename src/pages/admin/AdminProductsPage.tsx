@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
@@ -11,20 +12,26 @@ export default function AdminProductsPage() {
   const { products, loading, error, refetch, removeOne } = useProductsAdmin();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleDelete = async (product: Product) => {
-    if (
-      !confirm(`¿Eliminar "${product.name}"? Esta acción no se puede deshacer.`)
-    ) {
-      return;
-    }
-    setDeletingId(product.id);
-    try {
-      await removeOne(product.id);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error eliminando");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDelete = (product: Product) => {
+    toast.warning(`¿Eliminar "${product.name}"?`, {
+      description: "Esta acción no se puede deshacer.",
+      duration: 6000,
+      action: {
+        label: "Eliminar",
+        onClick: async () => {
+          setDeletingId(product.id);
+          try {
+            await removeOne(product.id);
+            toast.success(`"${product.name}" eliminado correctamente`);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Error eliminando");
+          } finally {
+            setDeletingId(null);
+          }
+        },
+      },
+      cancel: { label: "Cancelar" },
+    });
   };
 
   return (

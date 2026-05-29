@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -6,6 +7,7 @@ import { ProductCardSkeleton } from "@/components/product/ProductCardSkeleton";
 import { useCatalog } from "@/context/CatalogContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getCategories } from "@/services/product/products.service";
+import { fadeUp, stagger } from "@/utils/animations";
 
 const CatalogPage = () => {
   const [search, setSearch] = useState("");
@@ -55,23 +57,37 @@ const CatalogPage = () => {
     <main className="paper-texture min-h-[calc(100vh-65px)]">
       <Container size="xl" className="py-10 sm:py-14">
         {/* Header */}
-        <header className="mb-8 max-w-2xl">
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-sky-arg-700 mb-2">
+        <motion.header
+          className="mb-8 max-w-2xl"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.span
+            variants={fadeUp}
+            className="inline-block text-xs font-semibold tracking-widest uppercase text-sky-arg-700 mb-2"
+          >
             Catálogo
-          </span>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold mb-3">
+          </motion.span>
+          <motion.h1
+            variants={fadeUp}
+            className="font-display text-4xl sm:text-5xl font-bold mb-3"
+          >
             Nuestros productos
-          </h1>
-          <p className="text-leather-700">
+          </motion.h1>
+          <motion.p variants={fadeUp} className="text-leather-700">
             Mates, termos, materas, ponchos, sombreros y boinas hechos con
             tradición. Filtrá por categoría o buscá por nombre.
-          </p>
-        </header>
+          </motion.p>
+        </motion.header>
 
         {/* Filtros */}
-        <section
+        <motion.section
           aria-label="Filtros de productos"
           className="mb-8 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="relative flex-1 max-w-md">
             <input
@@ -122,7 +138,7 @@ const CatalogPage = () => {
               </button>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* Estados */}
         {loading && (
@@ -170,11 +186,16 @@ const CatalogPage = () => {
 
         {!loading && !error && products.length > 0 && (
           <>
-            <p className="text-sm text-leather-600 mb-4">
+            <motion.p
+              className="text-sm text-leather-600 mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
               {products.length} producto{products.length === 1 ? "" : "s"}
               {category && ` en "${category}"`}
               {debouncedSearch && ` para "${debouncedSearch}"`}
-            </p>
+            </motion.p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
