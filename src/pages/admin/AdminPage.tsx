@@ -4,7 +4,6 @@ import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { getAllOrders } from "@/services/order/orders.service";
-import { MOCK_PRODUCTS } from "@/utils/mockProducts";
 import type { Order } from "@/types/order";
 
 type OrderStats = {
@@ -17,14 +16,11 @@ export default function AdminPage() {
     products,
     loading: productsLoading,
     error: productsError,
-    bulkCreate,
   } = useProductsAdmin();
 
   const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,21 +46,6 @@ export default function AdminPage() {
       cancelled = true;
     };
   }, []);
-
-  const handleSeedMock = async () => {
-    setIsSeeding(true);
-    setSeedMessage(null);
-    try {
-      const count = await bulkCreate(MOCK_PRODUCTS);
-      setSeedMessage(`✔ Se crearon ${count} productos mock.`);
-    } catch (err) {
-      setSeedMessage(
-        `✖ Error: ${err instanceof Error ? err.message : "no se pudieron crear los productos"}`,
-      );
-    } finally {
-      setIsSeeding(false);
-    }
-  };
 
   const loading = productsLoading || ordersLoading;
   const error = productsError ?? ordersError;

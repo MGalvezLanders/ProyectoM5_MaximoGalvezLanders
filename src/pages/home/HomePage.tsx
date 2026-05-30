@@ -25,8 +25,7 @@ const HomePage = () => {
   const heroRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
 
-  // Sol de Mayo: rotación y desvanecimiento al hacer scroll
-  const solRotate = useTransform(scrollY, [0, 600], [0, 50]);
+  //* Sol de Mayo: escala y desvanecimiento al hacer scroll (rotación interna).
   const solScale = useTransform(scrollY, [0, 400], [1, 1.2]);
   const solOpacity = useTransform(scrollY, [0, 320], [0.22, 0]);
 

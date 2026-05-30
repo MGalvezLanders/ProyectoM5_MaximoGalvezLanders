@@ -6,7 +6,7 @@ type SelectFilterOption<T extends string> = {
 type SelectFilterBodyProps<T extends string> = {
   value: T | null;
   onChange: (value: T | null) => void;
-  options: SelectFilterOption<T>[];
+  options: ReadonlyArray<SelectFilterOption<T>>;
   allLabel?: string;
   capitalize?: boolean;
 };

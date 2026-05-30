@@ -59,7 +59,7 @@ export default function AdminProductsPage() {
           }
         },
       },
-      cancel: { label: "Cancelar" },
+      cancel: { label: "Cancelar", onClick: () => {} },
     });
   };
 

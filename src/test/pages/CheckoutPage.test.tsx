@@ -56,6 +56,7 @@ function renderCheckout({
               removeOne: vi.fn(),
               bulkCreate: vi.fn(),
               syncStockAfterPurchase: syncStockSpy,
+              restoreStockAfterCancel: vi.fn(),
             }}
           >
             <CartContext.Provider
@@ -66,6 +67,10 @@ function renderCheckout({
                 updateQuantity: vi.fn(),
                 clear: clearCartSpy,
                 error: null,
+                drawerOpen: false,
+                highlightedItemId: null,
+                openDrawer: vi.fn(),
+                closeDrawer: vi.fn(),
               }}
             >
               {children}
