@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -11,11 +10,10 @@ import { Spinner } from "@/components/ui/Spinner";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { BackButton } from "@/components/button/BackButton";
 import { useProduct } from "@/hooks/products/useProduct";
-import { useCart } from "@/hooks/cart/useCart";
+import { useAddToCart } from "@/hooks/cart/useAddToCart";
 import { formatPrice } from "@/utils/formatting";
 import { getStockBadge } from "@/utils/order/stockBadge";
 import type { Product } from "@/types/product";
-import { useAuth } from "@/hooks/useAuth";
 import { fadeLeft, fadeRight } from "@/utils/animations";
 
 const ProductDetailPage = () => {
@@ -72,25 +70,12 @@ const ProductDetailPage = () => {
 };
 
 function ProductDetailContent({ product }: { product: Product }) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
-  const [justAdded, setJustAdded] = useState(false);
-  const { addItem } = useCart();
+  const { addToCart, justAdded } = useAddToCart();
   const stockBadge = getStockBadge(product.stock);
   const outOfStock = product.stock === 0;
 
-  const handleAddToCart = () => {
-    if (!user) {
-      toast.warning("Debes iniciar sesión para agregar al carrito", {
-        action: { label: "Iniciar sesión", onClick: () => navigate("/login") },
-      });
-      return;
-    }
-    addItem(product, quantity);
-    setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 1500);
-  };
+  const handleAddToCart = () => addToCart(product, quantity);
 
   return (
     <>

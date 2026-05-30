@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/button/Button";
 import { useCart } from "@/hooks/cart/useCart";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { formatPrice } from "@/utils/formatting";
 
 /**
@@ -21,14 +22,7 @@ export function CartDrawer() {
   const navigate = useNavigate();
 
   //* Bloqueo de scroll del body mientras está abierto.
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [drawerOpen]);
+  useBodyScrollLock(drawerOpen);
 
   //* Escape cierra el drawer.
   useEffect(() => {

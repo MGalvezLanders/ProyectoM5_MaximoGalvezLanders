@@ -8,50 +8,13 @@ import { TextFilterBody } from "@/components/admin/filters/TextFilterBody";
 import { SelectFilterBody } from "@/components/admin/filters/SelectFilterBody";
 import { useAdminOrderFilters } from "@/hooks/admin/useAdminOrderFilters";
 import { getAllOrders } from "@/services/order/orders.service";
+import { formatOrderDateNumeric, formatPrice } from "@/utils/formatting";
+import {
+  STATUS_LABELS,
+  STATUS_OPTIONS,
+  STATUS_TONES,
+} from "@/utils/order/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendiente",
-  processing: "En proceso",
-  completed: "Completada",
-  cancelled: "Cancelada",
-};
-
-const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
-  pending: "sun",
-  processing: "sky",
-  completed: "field",
-  cancelled: "danger",
-};
-
-const STATUS_OPTIONS = [
-  { value: "pending" as const, label: STATUS_LABELS.pending },
-  { value: "processing" as const, label: STATUS_LABELS.processing },
-  { value: "completed" as const, label: STATUS_LABELS.completed },
-  { value: "cancelled" as const, label: STATUS_LABELS.cancelled },
-];
-
-const formatOrderDate = (date: unknown): string => {
-  if (date instanceof Date) return date.toLocaleDateString("es-AR");
-  if (
-    date &&
-    typeof date === "object" &&
-    "toDate" in date &&
-    typeof (date as { toDate: () => Date }).toDate === "function"
-  ) {
-    return (date as { toDate: () => Date })
-      .toDate()
-      .toLocaleDateString("es-AR");
-  }
-  return "—";
-};
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -232,7 +195,7 @@ export default function AdminOrdersPage() {
                       {o.id.slice(0, 8)}...
                     </td>
                     <td className="px-3 py-3 text-leather-700">
-                      {formatOrderDate(o.orderDate)}
+                      {formatOrderDateNumeric(o.orderDate)}
                     </td>
                     <td className="px-3 py-3 text-leather-700 font-mono text-xs">
                       {o.userId.slice(0, 10)}...

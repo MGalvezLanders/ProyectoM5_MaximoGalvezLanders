@@ -8,13 +8,7 @@ import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useCart } from "@/hooks/cart/useCart";
 import { BackButton } from "@/components/button/BackButton";
 import { fadeUp, stagger } from "@/utils/animations";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
+import { formatPrice } from "@/utils/formatting";
 
 export default function CartPage() {
   const { state, updateQuantity, removeItem, clear, error } = useCart();

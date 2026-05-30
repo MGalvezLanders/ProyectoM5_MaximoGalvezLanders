@@ -8,40 +8,8 @@ import {
 import { transitions } from "@/types/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
 import { useProductsActions } from "@/hooks/products/useProductsActions";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendiente",
-  processing: "En proceso",
-  completed: "Completada",
-  cancelled: "Cancelada",
-};
-
-const STATUS_TONES: Record<OrderStatus, "sun" | "sky" | "field" | "danger"> = {
-  pending: "sun",
-  processing: "sky",
-  completed: "field",
-  cancelled: "danger",
-};
-
-const formatOrderDate = (date: unknown): string => {
-  if (date instanceof Date) return date.toLocaleString("es-AR");
-  if (
-    date &&
-    typeof date === "object" &&
-    "toDate" in date &&
-    typeof (date as { toDate: () => Date }).toDate === "function"
-  ) {
-    return (date as { toDate: () => Date }).toDate().toLocaleString("es-AR");
-  }
-  return "—";
-};
+import { formatOrderDate, formatPrice } from "@/utils/formatting";
+import { STATUS_LABELS, STATUS_TONES } from "@/utils/order/orderStatus";
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();

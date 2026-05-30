@@ -1,43 +1,21 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/button/Button";
-import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/hooks/cart/useCart";
+import { useAddToCart } from "@/hooks/cart/useAddToCart";
 import type { Product } from "@/types/product";
 import { cardReveal } from "@/utils/animations";
+import { formatPrice } from "@/utils/formatting";
 
 type ProductCardProps = {
   product: Product;
 };
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
-
 export function ProductCard({ product }: ProductCardProps) {
-  const { user } = useAuth();
-  const { addItem } = useCart();
-  const navigate = useNavigate();
-  const [justAdded, setJustAdded] = useState(false);
+  const { addToCart, justAdded } = useAddToCart();
   const outOfStock = product.stock === 0;
 
-  const handleAdd = () => {
-    if (!user) {
-      toast.warning("Debes iniciar sesión para agregar al carrito", {
-        action: { label: "Iniciar sesión", onClick: () => navigate("/login") },
-      });
-      return;
-    }
-    addItem(product);
-    setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 1500);
-  };
+  const handleAdd = () => addToCart(product);
 
   return (
     <motion.article

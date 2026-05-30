@@ -1,37 +1,40 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/cart/useCart";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/button/Button";
+import { CartBadge } from "./CartBadge";
+import { NavbarMobileMenu } from "./NavbarMobileMenu";
+
+const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
+  [
+    "text-sm font-medium transition-colors px-1 py-0.5 border-b-2",
+    isActive
+      ? "text-leather-900 border-sun-500"
+      : "text-leather-600 border-transparent hover:text-leather-900 hover:border-sepia-400",
+  ].join(" ");
 
 export function Navbar() {
   const { user, profile, logout } = useAuth();
   const { state: cartState } = useCart();
-  const cartCount = cartState.items.reduce(
-    (acc: number, item: { quantity: number }) => acc + item.quantity,
-    0,
-  );
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Cerrar el menú al cambiar de ruta
+  const cartCount = cartState.items.reduce(
+    (acc, item) => acc + item.quantity,
+    0,
+  );
+
+  //* Cerrar el menú al cambiar de ruta.
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Bloquear scroll del body cuando el menú está abierto
-  useEffect(() => {
-    if (isOpen) {
-      const original = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = original;
-      };
-    }
-  }, [isOpen]);
+  //* Lock del scroll del body cuando está abierto el menú mobile.
+  useBodyScrollLock(isOpen);
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -39,21 +42,10 @@ export function Navbar() {
     navigate("/login");
   };
 
-  const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
-    [
-      "text-sm font-medium transition-colors px-1 py-0.5 border-b-2",
-      isActive
-        ? "text-leather-900 border-sun-500"
-        : "text-leather-600 border-transparent hover:text-leather-900 hover:border-sepia-400",
-    ].join(" ");
-
-  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
-    [
-      "block px-3 py-3 rounded-lg text-base font-medium transition-colors",
-      isActive
-        ? "bg-cream-200 text-leather-900"
-        : "text-leather-700 hover:bg-cream-100",
-    ].join(" ");
+  const handleRegister = () => {
+    setIsOpen(false);
+    navigate("/register");
+  };
 
   return (
     <header className="sticky top-0 z-40">
@@ -73,20 +65,7 @@ export function Navbar() {
                 </NavLink>
                 <NavLink to="/cart" className={desktopLinkClass}>
                   Carrito
-                  <AnimatePresence mode="popLayout">
-                    {cartCount > 0 && (
-                      <motion.span
-                        key={cartCount}
-                        initial={{ scale: 0.4, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.4, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 14 }}
-                        className="ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900"
-                      >
-                        {cartCount}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  <CartBadge count={cartCount} animated />
                 </NavLink>
                 <NavLink to="/orders" className={desktopLinkClass}>
                   Mis pedidos
@@ -158,76 +137,14 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Panel mobile */}
-        <div
-          id="mobile-menu"
-          className={[
-            "md:hidden overflow-hidden border-t border-sepia-300 bg-cream-50 transition-[max-height,opacity] duration-200 ease-out",
-            isOpen ? "max-h-[480px] opacity-100" : "max-h-0 opacity-0",
-          ].join(" ")}
-        >
-          <div className="px-4 py-3 flex flex-col gap-1">
-            {user ? (
-              <>
-                <div className="px-3 py-2 mb-1 border-b border-sepia-300/60">
-                  <p className="text-xs uppercase tracking-wider text-leather-500">
-                    Sesión iniciada
-                  </p>
-                  <p className="text-sm font-semibold text-leather-900 truncate">
-                    {profile?.name || user.email}
-                  </p>
-                </div>
-                <NavLink to="/catalog" className={mobileLinkClass}>
-                  Catálogo
-                </NavLink>
-                <NavLink to="/cart" className={mobileLinkClass}>
-                  Carrito
-                  {cartCount > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-sun-500 text-leather-900">
-                      {cartCount}
-                    </span>
-                  )}
-                </NavLink>
-                <NavLink to="/orders" className={mobileLinkClass}>
-                  Mis pedidos
-                </NavLink>
-                <NavLink to="/profile" className={mobileLinkClass}>
-                  Mi perfil
-                </NavLink>
-                {profile?.role === "admin" && (
-                  <NavLink to="/admin" className={mobileLinkClass}>
-                    Admin
-                  </NavLink>
-                )}
-                <div className="pt-2 mt-1 border-t border-sepia-300/60">
-                  <Button variant="outline" fullWidth onClick={handleLogout}>
-                    Cerrar sesión
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <NavLink to="/catalog" className={mobileLinkClass}>
-                  Catálogo
-                </NavLink>
-                <NavLink to="/login" className={mobileLinkClass}>
-                  Iniciar sesión
-                </NavLink>
-                <div className="pt-2 mt-1 border-t border-sepia-300/60">
-                  <Button
-                    fullWidth
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate("/register");
-                    }}
-                  >
-                    Registrarse
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <NavbarMobileMenu
+          isOpen={isOpen}
+          user={user}
+          profile={profile}
+          cartCount={cartCount}
+          onLogout={handleLogout}
+          onRegister={handleRegister}
+        />
       </nav>
     </header>
   );

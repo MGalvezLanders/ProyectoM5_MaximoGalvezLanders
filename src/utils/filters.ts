@@ -1,5 +1,6 @@
 import type { Product } from "@/types/product";
 import type { Order } from "@/types/order";
+import { formatOrderDateNumeric, formatPrice } from "@/utils/formatting";
 
 /** Normaliza para comparar: lowercase + trim. */
 const norm = (s: string | undefined | null): string =>
@@ -45,31 +46,12 @@ export const matchProductFuzzy = (product: Product, query: string): boolean => {
 const includesCI = (text: string | undefined | null, query: string): boolean =>
   norm(text).includes(query);
 
-/** Formato ARS sin centavos, igual al usado en la UI. */
-const priceFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  maximumFractionDigits: 0,
-});
-
-const formatPriceForMatch = (price: number): string =>
-  priceFormatter.format(price);
-
-/**
- * Convierte un Firestore Timestamp / Date / string a "DD/MM/YYYY" en es-AR
- * para que el filtro de texto sobre fecha funcione como en la grilla.
- */
+//* Formatters compartidos con la UI — el filtro matchea contra el mismo
+//* string que ve el usuario en la tabla.
+const formatPriceForMatch = (price: number): string => formatPrice(price);
 const formatDateForMatch = (date: unknown): string => {
-  if (date instanceof Date) return date.toLocaleDateString("es-AR");
-  if (
-    date &&
-    typeof date === "object" &&
-    "toDate" in date &&
-    typeof (date as { toDate: () => Date }).toDate === "function"
-  ) {
-    return (date as { toDate: () => Date }).toDate().toLocaleDateString("es-AR");
-  }
-  return "";
+  const formatted = formatOrderDateNumeric(date);
+  return formatted === "—" ? "" : formatted;
 };
 
 //* ─── Productos ─────────────────────────────────────────────────────────
