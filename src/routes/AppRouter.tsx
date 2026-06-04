@@ -22,24 +22,38 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminRoute } from "./admin/AdminRoute";
 import { Navbar, Footer, AdminLayout, CartDrawer } from "@/components";
 import { ProductsProvider, CatalogProvider, CartProvider } from "@/context";
+import { AuthLayout } from "@/components/forms/AuthLayout";
+
+const AUTH_PATHS = ["/login", "/register"];
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const isAuth = AUTH_PATHS.includes(location.pathname);
+
+  // Rutas de auth comparten la misma key → el motion.div no se desmonta
+  // al navegar entre /login y /register, así AuthLayout permanece montado
+  // y el panel puede deslizarse reactivamente entre sus posiciones.
+  const animKey = isAuth ? "auth" : location.pathname;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0, y: 14 }}
+        key={animKey}
+        initial={{ opacity: 0, y: isAuth ? 0 : 14 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        exit={{ opacity: 0, y: isAuth ? 0 : -6 }}
+        transition={{ duration: isAuth ? 0.2 : 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
         <Routes location={location}>
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Auth: comparten AuthLayout — el panel desliza al cambiar de ruta */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+
           <Route
             path="/catalog"
             element={
