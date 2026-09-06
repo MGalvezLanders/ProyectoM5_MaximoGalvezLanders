@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(mkdir -p src/assets/hero)",
+      "Bash(mv src/assets/wide-01.jpg src/assets/wide-10.jpg src/assets/wide-20.jpg src/assets/hero/)",
+      "Bash(npm test *)",
+      "Bash(git stash *)",
+      "Bash(dir C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\assets *)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\components\\\\hero\\\\MateScrollHero.tsx\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\hooks\\\\useScrollProgress.ts\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\utils\\\\framesOpacity.ts\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\test\\\\hooks\\\\useScrollProgress.test.ts\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\test\\\\utils\\\\framesOpacity.test.ts\" -Force)"
     ]
   }
 }

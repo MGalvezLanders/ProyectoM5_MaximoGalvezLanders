@@ -13,7 +13,7 @@ import {
 import type { Product } from "@/types/product";
 import type { DocumentSnapshot } from "firebase/firestore";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
 type CatalogFilters = Pick<ListProductsParams, "category" | "searchPrefix">;
 

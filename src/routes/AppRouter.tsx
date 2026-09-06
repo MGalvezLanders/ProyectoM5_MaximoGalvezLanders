@@ -26,22 +26,40 @@ import { AuthLayout } from "@/components/forms/AuthLayout";
 
 const AUTH_PATHS = ["/login", "/register"];
 
+// Rutas que contienen secciones con position: sticky/fixed y necesitan que el
+// wrapper de transición NO aplique transform — un ancestro con transform
+// rompe sticky (gotcha CSS clásico: el sticky empieza a anclarse al wrapper
+// en vez del viewport). En esos paths solo animamos opacity.
+const NO_TRANSFORM_PATHS = ["/catalog"];
+
 function AnimatedRoutes() {
   const location = useLocation();
   const isAuth = AUTH_PATHS.includes(location.pathname);
+  const noTransform = NO_TRANSFORM_PATHS.includes(location.pathname);
 
   // Rutas de auth comparten la misma key → el motion.div no se desmonta
   // al navegar entre /login y /register, así AuthLayout permanece montado
   // y el panel puede deslizarse reactivamente entre sus posiciones.
   const animKey = isAuth ? "auth" : location.pathname;
 
+  // Construimos las variantes sin `y` para rutas no-transform. Mantener `y: 0`
+  // tampoco sirve: framer-motion sigue escribiendo `transform: translateY(0px)`
+  // como inline style, que igual rompe los `position: sticky` descendientes.
+  const initialVariant = noTransform
+    ? { opacity: 0 }
+    : { opacity: 0, y: isAuth ? 0 : 14 };
+  const animateVariant = noTransform ? { opacity: 1 } : { opacity: 1, y: 0 };
+  const exitVariant = noTransform
+    ? { opacity: 0 }
+    : { opacity: 0, y: isAuth ? 0 : -6 };
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={animKey}
-        initial={{ opacity: 0, y: isAuth ? 0 : 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: isAuth ? 0 : -6 }}
+        initial={initialVariant}
+        animate={animateVariant}
+        exit={exitVariant}
         transition={{ duration: isAuth ? 0.2 : 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
         <Routes location={location}>
