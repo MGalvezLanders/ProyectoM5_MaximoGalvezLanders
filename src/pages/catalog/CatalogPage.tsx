@@ -1,33 +1,58 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductCardSkeleton } from "@/components/product/ProductCardSkeleton";
-import { CatalogSidebar } from "@/components/catalog/CatalogSidebar";
+import {
+  CatalogFilters,
+  type PriceRange,
+  type SortBy,
+} from "@/components/catalog/CatalogFilters";
 import { useCatalog } from "@/context/CatalogContext";
 import { useProductsList } from "@/hooks/products/useProductsList";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getCategories } from "@/services/product/products.service";
-import { matchProductFuzzy } from "@/utils/filters";
+import { matchProductFuzzy, assignGroup } from "@/utils/filters";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { fadeUp, stagger } from "@/utils/animations";
 
+const PRICE_BOUNDS: Record<PriceRange, [number, number]> = {
+  low:     [0,      10_000],
+  mid:     [10_000, 25_000],
+  high:    [25_000, 60_000],
+  premium: [60_000, Infinity],
+};
+
 const CatalogPage = () => {
   const [searchParams] = useSearchParams();
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string | undefined>(
-    searchParams.get("category") ?? undefined
-  );
-  const [categories, setCategories] = useState<string[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [search, setSearch]           = useState("");
+  const [group, setGroup]             = useState<string | undefined>();
+  const [category, setCategory]       = useState<string | undefined>();
+  const [priceRange, setPriceRange]   = useState<PriceRange | undefined>();
+  const [onlyInStock, setOnlyInStock] = useState(false);
+  const [sortBy, setSortBy]           = useState<SortBy>("default");
+
+  // Sync deep links (?category=mate+imperial) desde mega-menu
   useEffect(() => {
-    setCategory(searchParams.get("category") ?? undefined);
+    const cat = searchParams.get("category")?.toLowerCase().trim();
+    if (!cat) return;
+    const g = assignGroup(cat) ?? undefined;
+    setGroup(g ?? cat);
+    setCategory(g ? cat : undefined);
   }, [searchParams]);
 
+  // Bloquea scroll del body cuando el drawer mobile está abierto
+  useEffect(() => {
+    document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
+
   const debouncedSearch = useDebounce(search, 250);
+  const trimmedSearch   = debouncedSearch.trim();
+  const isSearching     = trimmedSearch.length >= 2;
 
   const {
     products: browseProducts,
@@ -45,36 +70,75 @@ const CatalogPage = () => {
     error: allError,
   } = useProductsList();
 
-  const trimmedSearch = debouncedSearch.trim();
-  const isSearching = trimmedSearch.length >= 2;
-
-  const searchResults = useMemo(() => {
-    if (!isSearching) return [];
-    return allProducts.filter((p) => matchProductFuzzy(p, trimmedSearch));
-  }, [allProducts, trimmedSearch, isSearching]);
+  const isFiltering =
+    isSearching || !!group || !!priceRange || onlyInStock || sortBy !== "default";
 
   useEffect(() => {
-    if (isSearching) return;
-    loadFirstPage({ category, searchPrefix: undefined });
-  }, [category, isSearching, loadFirstPage]);
+    if (isFiltering) return;
+    loadFirstPage({ category: undefined, searchPrefix: undefined });
+  }, [isFiltering, loadFirstPage]);
 
-  useEffect(() => {
-    getCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, []);
+  const displayProducts = useMemo(() => {
+    let list = isFiltering ? allProducts : browseProducts;
 
-  const refetch = () => loadFirstPage({ category, searchPrefix: undefined });
+    if (isSearching) {
+      list = list.filter((p) => matchProductFuzzy(p, trimmedSearch));
+    }
+
+    if (category) {
+      list = list.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+    } else if (group) {
+      list = list.filter((p) => assignGroup(p.category) === group);
+    }
+
+    if (priceRange) {
+      const [min, max] = PRICE_BOUNDS[priceRange];
+      list = list.filter((p) => p.price >= min && p.price < max);
+    }
+
+    if (onlyInStock) {
+      list = list.filter((p) => p.stock > 0);
+    }
+
+    if (sortBy === "price-asc") {
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-desc") {
+      list = [...list].sort((a, b) => b.price - a.price);
+    } else if (sortBy === "newest") {
+      list = [...list].sort(
+        (a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0),
+      );
+    }
+
+    return list;
+  }, [isFiltering, allProducts, browseProducts, isSearching, trimmedSearch, category, group, priceRange, onlyInStock, sortBy]);
+
+  const loading          = isFiltering ? allLoading   : browseLoading;
+  const error            = isFiltering ? allError     : browseError;
+  const showLoadMore     = !isFiltering && hasMore;
+  const hasActiveFilters = isSearching || !!group || !!priceRange || onlyInStock || sortBy !== "default";
+
+  const refetch = () => loadFirstPage({ category: undefined, searchPrefix: undefined });
 
   const handleClearFilters = () => {
     setSearch("");
+    setGroup(undefined);
     setCategory(undefined);
+    setPriceRange(undefined);
+    setOnlyInStock(false);
+    setSortBy("default");
   };
 
-  const products = isSearching ? searchResults : browseProducts;
-  const loading = isSearching ? allLoading : browseLoading;
-  const error = isSearching ? allError : browseError;
-  const showLoadMore = !isSearching && hasMore;
+  const filterProps = {
+    group, category, priceRange, onlyInStock, sortBy,
+    onGroupChange:      (g: string | undefined) => { setGroup(g); setCategory(undefined); },
+    onCategoryChange:   setCategory,
+    onPriceRangeChange: setPriceRange,
+    onInStockChange:    setOnlyInStock,
+    onSortChange:       setSortBy,
+    onClear:            handleClearFilters,
+    hasActiveFilters,
+  };
 
   return (
     <main className="paper-texture min-h-[calc(100vh-65px)]">
@@ -108,31 +172,67 @@ const CatalogPage = () => {
         {/* Layout: sidebar + contenido */}
         <div className="flex gap-6 lg:gap-8 items-start">
 
-          {/* Sidebar de categorías */}
-          <CatalogSidebar
-            category={category}
-            onSelect={setCategory}
-            firestoreCategories={categories}
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-          />
+          {/* ── Sidebar desktop ── */}
+          <aside className="hidden md:flex flex-col w-52 shrink-0 sticky top-20 self-start max-h-[calc(100vh-5.5rem)] border border-sepia-300 rounded-xl bg-cream-50 overflow-y-auto">
+            <CatalogFilters {...filterProps} />
+          </aside>
 
-          {/* Contenido principal */}
+          {/* ── Drawer mobile ── */}
+          <AnimatePresence>
+            {sidebarOpen && (
+              <>
+                <motion.div
+                  key="backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-leather-900/40 z-40 md:hidden"
+                  onClick={() => setSidebarOpen(false)}
+                />
+                <motion.aside
+                  key="drawer"
+                  initial={{ x: "-100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "-100%" }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  className="fixed inset-y-0 left-0 w-72 bg-cream-50 border-r border-sepia-300 z-50 md:hidden flex flex-col"
+                >
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-sepia-300 shrink-0">
+                    <span className="font-display font-semibold text-leather-900">Filtros</span>
+                    <button
+                      onClick={() => setSidebarOpen(false)}
+                      aria-label="Cerrar filtros"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-leather-700 hover:bg-cream-100 transition-colors"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <CatalogFilters {...filterProps} />
+                  </div>
+                </motion.aside>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* ── Contenido principal ── */}
           <div className="flex-1 min-w-0">
 
-            {/* Barra superior: filtros mobile + buscador */}
+            {/* Barra: botón mobile + buscador */}
             <motion.div
               className="mb-6 flex gap-3 items-center"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* Botón filtros mobile */}
               <button
                 onClick={() => setSidebarOpen(true)}
                 className={[
                   "md:hidden flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors shrink-0",
-                  category
+                  hasActiveFilters
                     ? "bg-leather-600 text-cream-50 border-leather-600"
                     : "bg-cream-50 text-leather-700 border-sepia-400",
                 ].join(" ")}
@@ -141,12 +241,11 @@ const CatalogPage = () => {
                   <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
                 Filtros
-                {category && (
+                {hasActiveFilters && (
                   <span className="w-2 h-2 rounded-full bg-sun-400 shrink-0" />
                 )}
               </button>
 
-              {/* Buscador */}
               <div className="relative flex-1">
                 <input
                   type="search"
@@ -175,9 +274,9 @@ const CatalogPage = () => {
               <div
                 role="status"
                 aria-label="Cargando productos"
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3"
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
               >
-                {Array.from({ length: 10 }).map((_, i) => (
+                {Array.from({ length: 8 }).map((_, i) => (
                   <ProductCardSkeleton key={i} />
                 ))}
                 <span className="sr-only">Cargando productos...</span>
@@ -198,17 +297,17 @@ const CatalogPage = () => {
             )}
 
             {/* Sin resultados */}
-            {!loading && !error && products.length === 0 && (
+            {!loading && !error && displayProducts.length === 0 && (
               <div className="text-center py-20 max-w-md mx-auto">
                 <h2 className="font-display text-2xl font-semibold mb-2">
                   No encontramos productos
                 </h2>
                 <p className="text-leather-700 mb-6">
-                  {debouncedSearch || category
-                    ? "Probá con otros filtros o limpialos para ver todo el catálogo."
+                  {hasActiveFilters
+                    ? "Probá con otros filtros o limpiálos para ver todo el catálogo."
                     : "Todavía no hay productos cargados en el catálogo."}
                 </p>
-                {(debouncedSearch || category) && (
+                {hasActiveFilters && (
                   <Button variant="outline" onClick={handleClearFilters}>
                     Limpiar filtros
                   </Button>
@@ -217,7 +316,7 @@ const CatalogPage = () => {
             )}
 
             {/* Productos */}
-            {!loading && !error && products.length > 0 && (
+            {!loading && !error && displayProducts.length > 0 && (
               <>
                 <motion.p
                   className="text-sm text-leather-600 mb-4"
@@ -225,14 +324,12 @@ const CatalogPage = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
-                  {products.length} producto{products.length === 1 ? "" : "s"}
-                  {isSearching
-                    ? ` para "${debouncedSearch}" en todo el catálogo`
-                    : category && ` en "${category}"`}
+                  {displayProducts.length} producto{displayProducts.length === 1 ? "" : "s"}
+                  {isSearching && ` para "${debouncedSearch}"`}
                 </motion.p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-                  {products.map((product) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {displayProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
@@ -255,7 +352,7 @@ const CatalogPage = () => {
                     </Button>
                   ) : (
                     <p className="text-sm text-leather-500">
-                      {isSearching
+                      {isFiltering
                         ? "Estos son todos los resultados."
                         : "No hay más productos."}
                     </p>

@@ -11,7 +11,8 @@
       "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\hooks\\\\useScrollProgress.ts\" -Force)",
       "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\utils\\\\framesOpacity.ts\" -Force)",
       "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\test\\\\hooks\\\\useScrollProgress.test.ts\" -Force)",
-      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\test\\\\utils\\\\framesOpacity.test.ts\" -Force)"
+      "Bash(Remove-Item \"C:\\\\Users\\\\galve\\\\Documents\\\\SOY HENRY\\\\MODULO-5\\\\ProyectoM5-MaximoGalvezLanders\\\\src\\\\test\\\\utils\\\\framesOpacity.test.ts\" -Force)",
+      "Bash(xargs grep -l \"grid\")"
     ]
   }
 }

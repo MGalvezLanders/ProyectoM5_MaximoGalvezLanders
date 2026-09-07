@@ -110,3 +110,20 @@ export const matchOrderStatus = (
   order: Order,
   status: string | null,
 ): boolean => !status || order.status === status;
+
+export const assignGroup = (cat: string): string | null => {
+  const l = cat.toLowerCase();
+  if (l.includes("matera"))   return "materas";
+  if (l.includes("mate"))     return "mates";
+  if (l.includes("termo"))    return "termos";
+  if (l.includes("bombilla")) return "bombillas";
+  if (l.includes("sombrero")) return "sombreros";
+  if (l.includes("boina"))    return "boinas";
+  if (l.includes("poncho"))   return "ponchos";
+  if (
+    l.includes("accesorio") || l.includes("cinturón") ||
+    l.includes("rastra") || l.includes("espuela") ||
+    l.includes("facón") || l.includes("botas")
+  ) return "accesorios";
+  return null;
+};
