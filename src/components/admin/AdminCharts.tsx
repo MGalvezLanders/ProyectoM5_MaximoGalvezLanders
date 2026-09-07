@@ -11,7 +11,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { formatPrice } from "@/utils/formatting";
 
@@ -88,7 +87,7 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(value: number) => [formatPrice(value), "Ingresos"]}
+              formatter={(value) => [formatPrice(typeof value === "number" ? value : 0), "Ingresos"]}
               labelStyle={{ color: "#7C5C30", fontWeight: 600 }}
             />
             <Area
@@ -140,10 +139,14 @@ export function OrdersByStatusChart({ data }: { data: StatusPoint[] }) {
               </Pie>
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(value: number, _: unknown, props: { payload?: { status?: string } }) => [
-                  `${value} (${Math.round((value / total) * 100)}%)`,
-                  STATUS_LABELS[props.payload?.status ?? ""] ?? props.payload?.status,
-                ]}
+                formatter={(value, name) => {
+                  const v = typeof value === "number" ? value : 0;
+                  const statusKey = String(name);
+                  return [
+                    `${v} (${Math.round((v / total) * 100)}%)`,
+                    STATUS_LABELS[statusKey] ?? statusKey,
+                  ];
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -203,7 +206,7 @@ export function ProductsByCategoryChart({ data }: { data: CategoryPoint[] }) {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(value: number) => [value, "Productos"]}
+              formatter={(value) => [typeof value === "number" ? value : 0, "Productos"]}
               cursor={{ fill: "#D4C4B040" }}
             />
             <Bar dataKey="count" radius={[0, 6, 6, 0]} maxBarSize={28}>
