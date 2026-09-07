@@ -6,12 +6,17 @@ export default function AdminProductFormPage() {
   const {
     state,
     loading,
-    selectedFile,
     isEditing,
+    existingImageUrls,
+    newFiles,
+    imageLocalError,
+    setImageLocalError,
     visibleErrors,
     handleChange,
     handleBlur,
-    handleFileSelected,
+    handleAddFile,
+    handleRemoveExisting,
+    handleRemoveNew,
     handleSubmit,
   } = useProductForm();
 
@@ -30,7 +35,7 @@ export default function AdminProductFormPage() {
           {isEditing ? "Editar producto" : "Nuevo producto"}
         </h2>
         <p className="text-sm text-leather-600">
-          Completá los datos. La imagen se sube a S3 al guardar.
+          Completá los datos. Las imágenes se suben a S3 al guardar.
         </p>
       </header>
 
@@ -39,12 +44,17 @@ export default function AdminProductFormPage() {
         errors={visibleErrors}
         status={state.status}
         globalError={state.globalError}
-        selectedFile={selectedFile}
         isEditing={isEditing}
+        existingImageUrls={existingImageUrls}
+        newFiles={newFiles}
+        imageLocalError={imageLocalError}
         onSubmit={handleSubmit}
         onChange={handleChange}
         onBlur={handleBlur}
-        onFileSelected={handleFileSelected}
+        onAddFile={handleAddFile}
+        onRemoveExisting={handleRemoveExisting}
+        onRemoveNew={handleRemoveNew}
+        onLocalError={setImageLocalError}
       />
     </div>
   );

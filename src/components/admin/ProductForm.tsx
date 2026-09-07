@@ -1,7 +1,7 @@
 import type { ChangeEvent, FocusEvent, ReactNode, SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/button/Button";
-import { ImageUploader } from "@/components/admin/ImageUploader";
+import { MultiImageUploader } from "@/components/admin/MultiImageUploader";
 import { PRODUCT_CATEGORIES } from "@/utils/categories";
 import type {
   ProductFormErrors,
@@ -25,10 +25,7 @@ function Field({
 }) {
   return (
     <div>
-      <label
-        htmlFor={htmlFor}
-        className="block text-sm font-medium text-leather-700 mb-1.5"
-      >
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-leather-700 mb-1.5">
         {label}
       </label>
       {children}
@@ -46,12 +43,17 @@ type ProductFormProps = {
   errors: ProductFormErrors;
   status: ProductFormStatus;
   globalError: string | null;
-  selectedFile: File | null;
   isEditing: boolean;
+  existingImageUrls: string[];
+  newFiles: File[];
+  imageLocalError: string | null;
   onSubmit: (e: SyntheticEvent<HTMLFormElement>) => void;
   onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onBlur: (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onFileSelected: (file: File | null) => void;
+  onAddFile: (file: File) => void;
+  onRemoveExisting: (url: string) => void;
+  onRemoveNew: (index: number) => void;
+  onLocalError: (msg: string | null) => void;
 };
 
 export function ProductForm({
@@ -59,23 +61,39 @@ export function ProductForm({
   errors,
   status,
   globalError,
-  selectedFile,
   isEditing,
+  existingImageUrls,
+  newFiles,
+  imageLocalError,
   onSubmit,
   onChange,
   onBlur,
-  onFileSelected,
+  onAddFile,
+  onRemoveExisting,
+  onRemoveNew,
+  onLocalError,
 }: ProductFormProps) {
   const navigate = useNavigate();
   const submitting = status === "submitting";
 
+  const uploadingLabel =
+    newFiles.length === 1
+      ? "Subiendo imagen..."
+      : `Subiendo ${newFiles.length} fotos...`;
+
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <Field label="Imagen" htmlFor="image" error={errors.image}>
-        <ImageUploader
-          existingImageUrl={fields.imageUrl}
-          onFileSelected={onFileSelected}
+      <Field label="Imágenes" htmlFor="image" error={errors.image}>
+        <MultiImageUploader
+          existingUrls={existingImageUrls}
+          newFiles={newFiles}
+          onAdd={onAddFile}
+          onRemoveExisting={onRemoveExisting}
+          onRemoveNew={onRemoveNew}
           disabled={submitting}
+          error={errors.image}
+          localError={imageLocalError}
+          onLocalError={onLocalError}
         />
       </Field>
 
@@ -93,11 +111,7 @@ export function ProductForm({
         />
       </Field>
 
-      <Field
-        label="Descripción"
-        htmlFor="description"
-        error={errors.description}
-      >
+      <Field label="Descripción" htmlFor="description" error={errors.description}>
         <textarea
           id="description"
           name="description"
@@ -177,8 +191,8 @@ export function ProductForm({
       <div className="flex gap-3 pt-2 border-t border-sepia-300">
         <Button type="submit" disabled={submitting}>
           {submitting
-            ? selectedFile
-              ? "Subiendo imagen..."
+            ? newFiles.length > 0
+              ? uploadingLabel
               : "Guardando..."
             : isEditing
               ? "Guardar cambios"

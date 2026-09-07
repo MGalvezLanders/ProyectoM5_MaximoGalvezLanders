@@ -31,6 +31,7 @@ export type ProductInput = {
   price: number;
   category: string;
   imageUrl: string;
+  imageUrls?: string[];
   stock: number;
 };
 

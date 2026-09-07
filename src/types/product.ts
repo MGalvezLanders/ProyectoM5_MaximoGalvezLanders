@@ -7,6 +7,7 @@ export type Product = {
   price: number;
   category: string;
   imageUrl: string;
+  imageUrls?: string[];
   stock: number;
   createdAt: Timestamp;
   /** name en minúsculas, para ordenar y buscar por prefijo en Firestore. */

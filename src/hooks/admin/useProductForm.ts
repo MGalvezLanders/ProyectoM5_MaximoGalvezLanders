@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useRef,
   useState,
   type ChangeEvent,
   type FocusEvent,
@@ -49,7 +48,7 @@ const validateFields = (
     errors.price = "El precio debe ser mayor a 0";
   if (fields.stock === "" || Number(fields.stock) < 0)
     errors.stock = "El stock no puede ser negativo";
-  if (!hasImage) errors.image = "Subí una imagen antes de guardar";
+  if (!hasImage) errors.image = "Subí al menos una imagen antes de guardar";
   return errors;
 };
 
@@ -61,12 +60,19 @@ export function useProductForm() {
 
   const [state, setState] = useState<ProductFormState>(INITIAL_STATE);
   const [loading, setLoading] = useState(isEditing);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Imágenes existentes (URLs de Firestore)
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  // Nuevos archivos elegidos por el admin
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  // URLs eliminadas por el admin (para borrar de S3 al guardar)
+  const [removedUrls, setRemovedUrls] = useState<string[]>([]);
+  // Error local del uploader (tamaño de archivo, etc.)
+  const [imageLocalError, setImageLocalError] = useState<string | null>(null);
+
   const [touched, setTouched] = useState<
     Partial<Record<keyof ProductFormErrors, true>>
   >({});
-
-  const initialImageUrlRef = useRef<string>("");
 
   useEffect(() => {
     if (!productId) return;
@@ -74,15 +80,14 @@ export function useProductForm() {
     setLoading(true);
     getProductById(productId)
       .then((product) => {
-        if (cancelled) return;
-        if (!product) {
-          setState((prev) => ({
-            ...prev,
-            globalError: "Producto no encontrado",
-          }));
-          return;
-        }
-        initialImageUrlRef.current = product.imageUrl;
+        if (cancelled || !product) return;
+        // Preferir imageUrls si existe, sino construir array con imageUrl
+        const urls =
+          product.imageUrls && product.imageUrls.length > 0
+            ? product.imageUrls
+            : [product.imageUrl].filter(Boolean);
+
+        setExistingImageUrls(urls);
         setState((prev) => ({
           ...prev,
           fields: {
@@ -91,7 +96,7 @@ export function useProductForm() {
             price: product.price,
             category: product.category,
             stock: product.stock,
-            imageUrl: product.imageUrl,
+            imageUrl: urls[0] ?? "",
           },
         }));
       })
@@ -106,10 +111,10 @@ export function useProductForm() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [productId]);
+
+  const hasImage = existingImageUrls.length > 0 || newFiles.length > 0;
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -117,13 +122,10 @@ export function useProductForm() {
     const { name, value } = e.target;
     const isNumeric = name === "price" || name === "stock";
     const parsedValue: ProductFormFields[keyof ProductFormFields] = isNumeric
-      ? value === ""
-        ? ""
-        : Number(value)
+      ? value === "" ? "" : Number(value)
       : value;
 
     const updatedFields = { ...state.fields, [name]: parsedValue };
-    const hasImage = Boolean(selectedFile || updatedFields.imageUrl);
     setState((prev) => ({
       ...prev,
       fields: updatedFields,
@@ -137,30 +139,44 @@ export function useProductForm() {
     setTouched((prev) => ({ ...prev, [e.target.name]: true }));
   };
 
-  const handleFileSelected = (file: File | null) => {
-    setSelectedFile(file);
+  // Añadir un nuevo archivo
+  const handleAddFile = (file: File) => {
+    setNewFiles((prev) => [...prev, file]);
     setTouched((prev) => ({ ...prev, image: true }));
-    const hasImage = Boolean(file || state.fields.imageUrl);
     setState((prev) => ({
       ...prev,
-      errors: validateFields(prev.fields, hasImage),
+      errors: validateFields(prev.fields, true),
+    }));
+  };
+
+  // Quitar una URL existente (de Firestore)
+  const handleRemoveExisting = (url: string) => {
+    setExistingImageUrls((prev) => prev.filter((u) => u !== url));
+    setRemovedUrls((prev) => [...prev, url]);
+    const remaining = existingImageUrls.filter((u) => u !== url);
+    const stillHas = remaining.length > 0 || newFiles.length > 0;
+    setState((prev) => ({
+      ...prev,
+      errors: validateFields(prev.fields, stillHas),
+    }));
+  };
+
+  // Quitar un archivo nuevo por índice
+  const handleRemoveNew = (index: number) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+    const remaining = existingImageUrls.length + newFiles.length - 1;
+    setState((prev) => ({
+      ...prev,
+      errors: validateFields(prev.fields, remaining > 0),
     }));
   };
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const hasImage = Boolean(selectedFile || state.fields.imageUrl);
     const errors = validateFields(state.fields, hasImage);
     if (Object.keys(errors).length > 0) {
-      setTouched({
-        name: true,
-        description: true,
-        price: true,
-        category: true,
-        stock: true,
-        image: true,
-      });
+      setTouched({ name: true, description: true, price: true, category: true, stock: true, image: true });
       setState((prev) => ({ ...prev, errors, globalError: null }));
       return;
     }
@@ -168,11 +184,12 @@ export function useProductForm() {
     setState((prev) => ({ ...prev, status: "submitting", globalError: null }));
 
     try {
-      let finalImageUrl = state.fields.imageUrl;
-      if (selectedFile) {
-        const { publicUrl } = await uploadImage(selectedFile);
-        finalImageUrl = publicUrl;
-      }
+      // Subir todos los archivos nuevos en paralelo
+      const uploadedUrls: string[] = await Promise.all(
+        newFiles.map((f) => uploadImage(f).then((r) => r.publicUrl)),
+      );
+
+      const allUrls = [...existingImageUrls, ...uploadedUrls];
 
       const payload: ProductInput = {
         name: state.fields.name.trim(),
@@ -180,7 +197,8 @@ export function useProductForm() {
         category: state.fields.category.trim().toLowerCase(),
         price: Number(state.fields.price),
         stock: Number(state.fields.stock),
-        imageUrl: finalImageUrl,
+        imageUrl: allUrls[0],
+        imageUrls: allUrls,
       };
 
       if (isEditing && productId) {
@@ -189,9 +207,9 @@ export function useProductForm() {
         await createOne(payload);
       }
 
-      const oldUrl = initialImageUrlRef.current;
-      if (selectedFile && oldUrl && oldUrl !== finalImageUrl) {
-        void deleteImageByUrl(oldUrl);
+      // Borrar de S3 las imágenes que el admin eliminó
+      for (const url of removedUrls) {
+        void deleteImageByUrl(url);
       }
 
       setState((prev) => ({ ...prev, status: "success" }));
@@ -203,17 +221,12 @@ export function useProductForm() {
         if (err.message.includes("permission-denied")) {
           message = "No tenés permiso para realizar esta acción";
         } else if (err.message.toLowerCase().includes("cors")) {
-          message =
-            "Error de CORS al subir la imagen — revisar config del bucket";
+          message = "Error de CORS al subir la imagen — revisar config del bucket";
         } else if (err.message) {
           message = err.message;
         }
       }
-      setState((prev) => ({
-        ...prev,
-        status: "error",
-        globalError: message,
-      }));
+      setState((prev) => ({ ...prev, status: "error", globalError: message }));
     }
   };
 
@@ -226,12 +239,17 @@ export function useProductForm() {
   return {
     state,
     loading,
-    selectedFile,
     isEditing,
+    existingImageUrls,
+    newFiles,
+    imageLocalError,
+    setImageLocalError,
     visibleErrors,
     handleChange,
     handleBlur,
-    handleFileSelected,
+    handleAddFile,
+    handleRemoveExisting,
+    handleRemoveNew,
     handleSubmit,
   };
 }
