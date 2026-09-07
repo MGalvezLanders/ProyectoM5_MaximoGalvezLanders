@@ -52,6 +52,8 @@ const tooltipStyle = {
 export type RevenuePoint = { date: string; revenue: number };
 export type StatusPoint = { status: string; count: number };
 export type CategoryPoint = { category: string; count: number };
+export type TopProductPoint = { name: string; qty: number };
+export type WeekdayPoint = { day: string; count: number };
 
 // ─── Revenue chart ───────────────────────────────────────────────────────────
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
@@ -222,6 +224,105 @@ export function ProductsByCategoryChart({ data }: { data: CategoryPoint[] }) {
                       COLORS.sky,
                       COLORS.sepia,
                     ][i % 6]
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </ChartCard>
+  );
+}
+
+// ─── Top productos vendidos (bar horizontal) ─────────────────────────────────
+export function TopProductsChart({ data }: { data: TopProductPoint[] }) {
+  const hasData = data.length > 0;
+
+  return (
+    <ChartCard title="Top productos más vendidos">
+      {!hasData ? (
+        <EmptyState />
+      ) : (
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 4, right: 24, left: 4, bottom: 4 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#D4C4B0" horizontal={false} />
+            <XAxis
+              type="number"
+              allowDecimals={false}
+              tick={{ fontSize: 11, fill: "#8B6840" }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              tick={{ fontSize: 11, fill: "#3D2B0F" }}
+              tickLine={false}
+              axisLine={false}
+              width={110}
+              tickFormatter={(v: string) => (v.length > 15 ? v.slice(0, 14) + "…" : v)}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(value) => [typeof value === "number" ? value : 0, "Unidades vendidas"]}
+              cursor={{ fill: "#D4C4B040" }}
+            />
+            <Bar dataKey="qty" fill={COLORS.terracota} radius={[0, 6, 6, 0]} maxBarSize={26} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </ChartCard>
+  );
+}
+
+// ─── Órdenes por día de semana (bar vertical) ────────────────────────────────
+export function OrdersByWeekdayChart({ data }: { data: WeekdayPoint[] }) {
+  const hasData = data.some((d) => d.count > 0);
+
+  return (
+    <ChartCard title="Órdenes por día de semana">
+      {!hasData ? (
+        <EmptyState />
+      ) : (
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#D4C4B0" vertical={false} />
+            <XAxis
+              dataKey="day"
+              tick={{ fontSize: 12, fill: "#3D2B0F" }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              allowDecimals={false}
+              tick={{ fontSize: 11, fill: "#8B6840" }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(value) => [typeof value === "number" ? value : 0, "Órdenes"]}
+              cursor={{ fill: "#D4C4B040" }}
+            />
+            <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={40}>
+              {data.map((_, i) => (
+                <Cell
+                  key={i}
+                  fill={
+                    [
+                      COLORS.leather,
+                      COLORS.sky,
+                      COLORS.field,
+                      COLORS.terracota,
+                      COLORS.sun,
+                      COLORS.sky,
+                      COLORS.sepia,
+                    ][i % 7]
                   }
                 />
               ))}

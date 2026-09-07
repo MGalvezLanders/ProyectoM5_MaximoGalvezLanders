@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import {
   HomePage,
   LoginPage,
@@ -34,6 +35,11 @@ const NO_TRANSFORM_PATHS = ["/catalog"];
 
 function AnimatedRoutes() {
   const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [location.pathname]);
+
   const isAuth = AUTH_PATHS.includes(location.pathname);
   const noTransform = NO_TRANSFORM_PATHS.includes(location.pathname);
 

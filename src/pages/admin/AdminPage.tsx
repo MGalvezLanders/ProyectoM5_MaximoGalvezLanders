@@ -8,9 +8,13 @@ import {
   RevenueChart,
   OrdersByStatusChart,
   ProductsByCategoryChart,
+  TopProductsChart,
+  OrdersByWeekdayChart,
   type RevenuePoint,
   type StatusPoint,
   type CategoryPoint,
+  type TopProductPoint,
+  type WeekdayPoint,
 } from "@/components/admin/AdminCharts";
 import type { Order } from "@/types/order";
 
@@ -106,6 +110,34 @@ export default function AdminPage() {
       .sort((a, b) => b.count - a.count);
   }, [products]);
 
+  const topProductsData = useMemo<TopProductPoint[]>(() => {
+    const map = new Map<string, { name: string; qty: number }>();
+    orders
+      .filter((o) => o.status !== "cancelled")
+      .forEach((o) => {
+        o.items.forEach((item) => {
+          const entry = map.get(item.id);
+          if (entry) {
+            entry.qty += item.quantity;
+          } else {
+            map.set(item.id, { name: item.name, qty: item.quantity });
+          }
+        });
+      });
+    return Array.from(map.values())
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 6);
+  }, [orders]);
+
+  const WEEKDAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const weekdayData = useMemo<WeekdayPoint[]>(() => {
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    orders.forEach((o) => {
+      counts[o.orderDate.toDate().getDay()]++;
+    });
+    return WEEKDAYS.map((day, i) => ({ day, count: counts[i] }));
+  }, [orders]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
   const loading = productsLoading || ordersLoading;
   const error = productsError ?? ordersError;
@@ -171,6 +203,11 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <OrdersByStatusChart data={statusData} />
           <ProductsByCategoryChart data={categoryData} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TopProductsChart data={topProductsData} />
+          <OrdersByWeekdayChart data={weekdayData} />
         </div>
       </div>
     </div>
