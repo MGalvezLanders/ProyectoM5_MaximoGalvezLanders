@@ -30,7 +30,7 @@ export function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
 
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const cartCount = cartState.items.reduce(
