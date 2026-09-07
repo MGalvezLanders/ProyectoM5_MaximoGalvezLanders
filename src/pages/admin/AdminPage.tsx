@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useProductsAdmin } from "@/hooks/admin/useProductsAdmin";
 import { getAllOrders } from "@/services/order/orders.service";
+import {
+  RevenueChart,
+  OrdersByStatusChart,
+  ProductsByCategoryChart,
+  type RevenuePoint,
+  type StatusPoint,
+  type CategoryPoint,
+} from "@/components/admin/AdminCharts";
 import type { Order } from "@/types/order";
-
-type OrderStats = {
-  totalOrders: number;
-  pendingOrders: number;
-};
 
 export default function AdminPage() {
   const {
@@ -18,26 +21,21 @@ export default function AdminPage() {
     error: productsError,
   } = useProductsAdmin();
 
-  const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     getAllOrders()
-      .catch(() => [] as Order[])
-      .then((orders) => {
-        if (cancelled) return;
-        setOrderStats({
-          totalOrders: orders.length,
-          pendingOrders: orders.filter((o) => o.status === "pending").length,
-        });
+      .then((data) => {
+        if (!cancelled) setOrders(data);
       })
       .catch((err) => {
-        if (cancelled) return;
-        setOrdersError(
-          err instanceof Error ? err.message : "Error cargando órdenes",
-        );
+        if (!cancelled)
+          setOrdersError(
+            err instanceof Error ? err.message : "Error cargando órdenes",
+          );
       })
       .finally(() => {
         if (!cancelled) setOrdersLoading(false);
@@ -47,11 +45,70 @@ export default function AdminPage() {
     };
   }, []);
 
-  const loading = productsLoading || ordersLoading;
-  const error = productsError ?? ordersError;
-
+  // ── Derived stats ──────────────────────────────────────────────────────────
   const totalProducts = products.length;
   const outOfStock = products.filter((p) => p.stock === 0).length;
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter((o) => o.status === "pending").length;
+
+  // ── Chart data ─────────────────────────────────────────────────────────────
+  const revenueData = useMemo<RevenuePoint[]>(() => {
+    const now = Date.now();
+    const msPerDay = 86_400_000;
+    const map = new Map<string, number>();
+
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now - i * msPerDay);
+      map.set(fmtDate(d), 0);
+    }
+
+    const cutoff = new Date(now - 29 * msPerDay);
+    cutoff.setHours(0, 0, 0, 0);
+
+    orders
+      .filter((o) => o.status !== "cancelled")
+      .forEach((o) => {
+        const d = o.orderDate.toDate();
+        if (d >= cutoff) {
+          const key = fmtDate(d);
+          map.set(key, (map.get(key) ?? 0) + o.totalPrice);
+        }
+      });
+
+    return Array.from(map.entries()).map(([date, revenue]) => ({
+      date,
+      revenue,
+    }));
+  }, [orders]);
+
+  const statusData = useMemo<StatusPoint[]>(() => {
+    const counts: Record<string, number> = {
+      pending: 0,
+      processing: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    orders.forEach((o) => {
+      counts[o.status] = (counts[o.status] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .filter(([, count]) => count > 0)
+      .map(([status, count]) => ({ status, count }));
+  }, [orders]);
+
+  const categoryData = useMemo<CategoryPoint[]>(() => {
+    const map = new Map<string, number>();
+    products.forEach((p) => {
+      map.set(p.category, (map.get(p.category) ?? 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [products]);
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  const loading = productsLoading || ordersLoading;
+  const error = productsError ?? ordersError;
 
   if (loading) {
     return (
@@ -74,6 +131,7 @@ export default function AdminPage() {
         </p>
       </header>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Productos" value={totalProducts} />
         <StatCard
@@ -81,17 +139,15 @@ export default function AdminPage() {
           value={outOfStock}
           tone={outOfStock > 0 ? "warn" : "neutral"}
         />
-        <StatCard
-          label="Órdenes totales"
-          value={orderStats?.totalOrders ?? 0}
-        />
+        <StatCard label="Órdenes totales" value={totalOrders} />
         <StatCard
           label="Órdenes pendientes"
-          value={orderStats?.pendingOrders ?? 0}
-          tone={orderStats && orderStats.pendingOrders > 0 ? "warn" : "neutral"}
+          value={pendingOrders}
+          tone={pendingOrders > 0 ? "warn" : "neutral"}
         />
       </div>
 
+      {/* Quick actions */}
       <div className="border-t border-sepia-300 pt-6 flex flex-wrap gap-3">
         <Link to="/admin/products/new">
           <Button>Crear producto</Button>
@@ -104,8 +160,26 @@ export default function AdminPage() {
         </Link>
       </div>
 
+      {/* Charts */}
+      <div className="border-t border-sepia-300 pt-8 space-y-6">
+        <h3 className="font-display text-lg font-bold text-leather-900">
+          Estadísticas
+        </h3>
+
+        <RevenueChart data={revenueData} />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <OrdersByStatusChart data={statusData} />
+          <ProductsByCategoryChart data={categoryData} />
+        </div>
+      </div>
     </div>
   );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" });
 }
 
 function StatCard({

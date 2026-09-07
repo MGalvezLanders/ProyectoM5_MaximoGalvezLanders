@@ -98,11 +98,39 @@ function CreditCardIcon() {
   );
 }
 
+function ChevronLeftIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function ProductDetailContent({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart, justAdded } = useAddToCart();
   const stockBadge = getStockBadge(product.stock);
   const outOfStock = product.stock === 0;
+
+  const images =
+    product.imageUrls && product.imageUrls.length > 0
+      ? product.imageUrls
+      : [product.imageUrl];
+  const hasMultiple = images.length > 1;
+
+  const goToPrev = () =>
+    setCurrentImageIndex((i) => (i - 1 + images.length) % images.length);
+  const goToNext = () =>
+    setCurrentImageIndex((i) => (i + 1) % images.length);
 
   const transferPrice = Math.round(product.price * 0.9);
   const installmentPrice = Math.round((product.price * 1.1) / 6);
@@ -120,15 +148,66 @@ function ProductDetailContent({ product }: { product: Product }) {
           variants={fadeLeft}
           initial="hidden"
           animate="visible"
-          className="bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm"
+          className="flex flex-col gap-3"
         >
-          <div className="aspect-square">
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+          {/* Imagen principal */}
+          <div className="relative bg-cream-100 border border-sepia-300 rounded-2xl overflow-hidden shadow-warm">
+            <div className="aspect-square">
+              <img
+                key={currentImageIndex}
+                src={images[currentImageIndex]}
+                alt={`${product.name}${hasMultiple ? ` — foto ${currentImageIndex + 1}` : ""}`}
+                className="w-full h-full object-cover transition-opacity duration-300"
+              />
+            </div>
+
+            {hasMultiple && (
+              <>
+                <button
+                  onClick={goToPrev}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-cream-50/85 backdrop-blur-sm border border-sepia-300 rounded-full w-10 h-10 flex items-center justify-center text-leather-700 hover:bg-cream-200 hover:text-leather-900 transition-colors shadow-sm"
+                  aria-label="Foto anterior"
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <button
+                  onClick={goToNext}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-cream-50/85 backdrop-blur-sm border border-sepia-300 rounded-full w-10 h-10 flex items-center justify-center text-leather-700 hover:bg-cream-200 hover:text-leather-900 transition-colors shadow-sm"
+                  aria-label="Foto siguiente"
+                >
+                  <ChevronRightIcon />
+                </button>
+
+                <div className="absolute bottom-3 right-3 bg-leather-900/55 text-cream-50 text-xs font-medium px-2.5 py-1 rounded-full select-none">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
           </div>
+
+          {/* Miniaturas */}
+          {hasMultiple && (
+            <div className="flex gap-2 justify-center flex-wrap">
+              {images.map((url, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentImageIndex(i)}
+                  aria-label={`Ver foto ${i + 1}`}
+                  className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                    i === currentImageIndex
+                      ? "border-leather-700 shadow-md scale-105"
+                      : "border-sepia-300 opacity-55 hover:opacity-90 hover:border-sepia-500"
+                  }`}
+                >
+                  <img
+                    src={url}
+                    alt={`Miniatura ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Info */}
