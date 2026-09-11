@@ -113,6 +113,16 @@ export const deleteProduct = async (id: string): Promise<void> => {
   await deleteDoc(doc(db, "products", id));
 };
 
+export const getTopProducts = async (count = 8): Promise<Product[]> => {
+  const q = query(
+    productsCollection,
+    orderBy("createdAt", "desc"),
+    limit(count),
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(mapDoc);
+};
+
 //* ─── Listado paginado (server-side, con cursor) ─────────────────────────────
 export type ListProductsParams = {
   category?: string;

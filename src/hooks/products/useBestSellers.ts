@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getProducts } from "@/services/product/products.service";
+import { getTopProducts } from "@/services/product/products.service";
 import type { Product } from "@/types/product";
 
 export function useBestSellers() {
@@ -7,8 +7,8 @@ export function useBestSellers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProducts()
-      .then((all) => setProducts(all.slice(0, 8)))
+    getTopProducts(8)
+      .then((items) => setProducts(items))
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, []);
