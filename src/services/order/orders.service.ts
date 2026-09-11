@@ -3,10 +3,15 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   runTransaction,
   serverTimestamp,
+  startAfter,
   where,
+  type DocumentSnapshot,
+  type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "../config/firebase.service";
 import type { Order, OrderInput, OrderStatus } from "@/types/order";
@@ -79,6 +84,28 @@ export const getAllOrders = async (): Promise<Order[]> => {
     const bTime = b.orderDate?.toMillis?.() ?? 0;
     return bTime - aTime;
   });
+};
+
+export type ListOrdersResult = {
+  items: Order[];
+  lastDoc: DocumentSnapshot | null;
+};
+
+export const listOrders = async (
+  pageSize = 30,
+  cursor: DocumentSnapshot | null = null,
+): Promise<ListOrdersResult> => {
+  const constraints: QueryConstraint[] = [
+    orderBy("orderDate", "desc"),
+    limit(pageSize),
+  ];
+  if (cursor) constraints.push(startAfter(cursor));
+
+  const snapshot = await getDocs(query(ordersCollection, ...constraints));
+  return {
+    items: snapshot.docs.map(mapDoc),
+    lastDoc: snapshot.docs.at(-1) ?? null,
+  };
 };
 
 export const getUserOrders = async (userId: string): Promise<Order[]> => {

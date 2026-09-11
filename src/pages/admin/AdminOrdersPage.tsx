@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/button/Button";
@@ -7,7 +7,7 @@ import { ColumnHeader } from "@/components/admin/ColumnHeader";
 import { TextFilterBody } from "@/components/admin/filters/TextFilterBody";
 import { SelectFilterBody } from "@/components/admin/filters/SelectFilterBody";
 import { useAdminOrderFilters } from "@/hooks/admin/useAdminOrderFilters";
-import { getAllOrders } from "@/services/order/orders.service";
+import { listOrders } from "@/services/order/orders.service";
 import { formatOrderDateNumeric, formatPrice } from "@/utils/formatting";
 import {
   STATUS_LABELS,
@@ -15,11 +15,17 @@ import {
   STATUS_TONES,
 } from "@/utils/order/orderStatus";
 import type { Order, OrderStatus } from "@/types/order";
+import type { DocumentSnapshot } from "firebase/firestore";
+
+const PAGE_SIZE = 30;
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const cursorRef = useRef<DocumentSnapshot | null>(null);
 
   const {
     id,
@@ -40,9 +46,13 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getAllOrders()
-      .then((data) => {
-        if (!cancelled) setOrders(data);
+    listOrders(PAGE_SIZE, null)
+      .then(({ items, lastDoc }) => {
+        if (!cancelled) {
+          setOrders(items);
+          cursorRef.current = lastDoc;
+          setHasMore(items.length === PAGE_SIZE);
+        }
       })
       .catch((err) => {
         if (!cancelled)
@@ -57,6 +67,21 @@ export default function AdminOrdersPage() {
       cancelled = true;
     };
   }, []);
+
+  const handleLoadMore = async () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { items, lastDoc } = await listOrders(PAGE_SIZE, cursorRef.current);
+      setOrders((prev) => [...prev, ...items]);
+      cursorRef.current = lastDoc;
+      setHasMore(items.length === PAGE_SIZE);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error cargando más órdenes");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -99,6 +124,7 @@ export default function AdminOrdersPage() {
       )}
 
       {!loading && !error && orders.length > 0 && (
+        <div className="space-y-4">
         <div className="overflow-x-auto -mx-6">
           <table className="w-full text-sm">
             <thead className="border-y border-sepia-300 bg-cream-100/60 text-leather-600">
@@ -197,8 +223,12 @@ export default function AdminOrdersPage() {
                     <td className="px-3 py-3 text-leather-700">
                       {formatOrderDateNumeric(o.orderDate)}
                     </td>
-                    <td className="px-3 py-3 text-leather-700 font-mono text-xs">
-                      {o.userId.slice(0, 10)}...
+                    <td className="px-3 py-3 text-leather-700">
+                      {o.shippingInfo?.name ?? (
+                        <span className="font-mono text-xs text-leather-500">
+                          {o.userId.slice(0, 10)}…
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-3 text-right font-medium tabular-nums">
                       {formatPrice(o.totalPrice)}
@@ -220,6 +250,25 @@ export default function AdminOrdersPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+          {hasMore && !hasActiveFilters && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner className="w-4 h-4" /> Cargando...
+                  </span>
+                ) : (
+                  "Cargar más órdenes"
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
