@@ -18,6 +18,7 @@ export default function AdminOrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [pendingCancel, setPendingCancel] = useState(false);
   const { restoreStockAfterCancel } = useProductsActions();
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function AdminOrderDetailPage() {
     };
   }, [id]);
 
-  const handleStatusChange = async (newStatus: OrderStatus) => {
+  const applyStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
     setStatusError(null);
     setSaving(true);
@@ -65,6 +66,14 @@ export default function AdminOrderDetailPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    if (newStatus === "cancelled") {
+      setPendingCancel(true);
+      return;
+    }
+    applyStatusChange(newStatus);
   };
 
   if (loading) {
@@ -110,7 +119,12 @@ export default function AdminOrderDetailPage() {
       <div className="grid sm:grid-cols-2 gap-4">
         <InfoCard label="Fecha">{formatOrderDate(order.orderDate)}</InfoCard>
         <InfoCard label="Usuario">
-          <span className="font-mono text-xs">{order.userId}</span>
+          <span className="font-medium">
+            {order.shippingInfo?.name ?? "—"}
+          </span>
+          <span className="block font-mono text-xs text-leather-500 mt-0.5">
+            {order.userId}
+          </span>
         </InfoCard>
         <InfoCard label="Total">
           <span className="font-display text-xl font-bold">
@@ -163,7 +177,7 @@ export default function AdminOrderDetailPage() {
               {item.imageUrl && (
                 <img
                   src={item.imageUrl}
-                  alt=""
+                  alt={item.name}
                   className="w-16 h-16 rounded-lg object-cover border border-sepia-300 flex-shrink-0"
                 />
               )}
@@ -202,7 +216,7 @@ export default function AdminOrderDetailPage() {
                 onChange={(e) =>
                   handleStatusChange(e.target.value as OrderStatus)
                 }
-                disabled={saving}
+                disabled={saving || pendingCancel}
                 className="px-3 py-2 rounded-lg bg-cream-50 text-leather-900 border border-sepia-400 focus:outline-none focus:ring-2 focus:ring-sun-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <option value="" disabled>
@@ -216,6 +230,41 @@ export default function AdminOrderDetailPage() {
               </select>
               {saving && <Spinner className="w-5 h-5" />}
             </div>
+
+            {pendingCancel && (
+              <div className="mt-3 p-3 bg-cream-100 border border-terracota-500/40 rounded-lg">
+                <p className="text-sm text-leather-900 font-medium mb-3">
+                  ¿Confirmar cancelación? Esta acción restituirá el stock de los
+                  productos y{" "}
+                  <span className="text-terracota-500 font-semibold">
+                    no se puede deshacer
+                  </span>
+                  .
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPendingCancel(false)}
+                    disabled={saving}
+                  >
+                    No, mantener
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingCancel(false);
+                      applyStatusChange("cancelled");
+                    }}
+                    disabled={saving}
+                    className="px-3 py-1.5 text-sm font-medium rounded-lg bg-terracota-500 text-white hover:opacity-90 disabled:opacity-60 transition-opacity"
+                  >
+                    Sí, cancelar orden
+                  </button>
+                </div>
+              </div>
+            )}
+
             {statusError && (
               <p className="text-xs text-terracota-500" role="alert">
                 {statusError}
