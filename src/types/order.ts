@@ -15,7 +15,12 @@ export type ShippingInfo = {
   name: string;
   address: string;
   city: string;
+  phone?: string;
+  province?: string;
+  postalCode?: string;
 };
+
+export type PaymentMethod = "mercadopago" | "transfer";
 
 export type Order = {
   id: string;
@@ -25,6 +30,7 @@ export type Order = {
   status: OrderStatus;
   orderDate: Timestamp;
   shippingInfo: ShippingInfo;
+  paymentMethod?: PaymentMethod;
 };
 
 export type OrderInput = {
@@ -32,4 +38,5 @@ export type OrderInput = {
   items: OrderItem[];
   totalPrice: number;
   shippingInfo: ShippingInfo;
+  paymentMethod?: PaymentMethod;
 };

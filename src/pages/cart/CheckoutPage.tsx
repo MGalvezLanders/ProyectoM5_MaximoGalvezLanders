@@ -1,144 +1,459 @@
+import type { ChangeEvent, FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/product/Card";
 import { Button } from "@/components/button/Button";
-import { FormField } from "@/components/forms/FormField";
 import { useCheckout } from "@/hooks/useCheckout";
 import { formatPrice } from "@/utils/formatting";
+import type { PaymentMethod, ShippingInfo } from "@/types/order";
+
+const PROVINCES = [
+  "Buenos Aires", "Ciudad Autónoma de Buenos Aires", "Catamarca", "Chaco",
+  "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy",
+  "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro",
+  "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe",
+  "Santiago del Estero", "Tierra del Fuego", "Tucumán",
+];
+
+const inputClass =
+  "w-full px-3.5 py-2.5 rounded-lg bg-white text-leather-900 placeholder-leather-400/60 border border-sepia-300 focus:outline-none focus:ring-2 focus:ring-sun-500/50 focus:border-sun-500 transition-colors disabled:opacity-60 text-sm";
+const errorClass = "mt-1 text-xs text-terracota-500";
+
+/* ── Componentes pequeños ─────────────────────────────────────────────────── */
+
+function FieldWrapper({
+  label, htmlFor, error, children,
+}: { label: string; htmlFor: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="block text-xs font-semibold uppercase tracking-wide text-leather-600 mb-1.5">
+        {label}
+      </label>
+      {children}
+      {error && <p className={errorClass}>{error}</p>}
+    </div>
+  );
+}
+
+function StepIndicator({ current }: { current: 1 | 2 }) {
+  const steps = [
+    { n: 1 as const, label: "Datos de envío" },
+    { n: 2 as const, label: "Método de pago" },
+  ];
+  return (
+    <div className="flex items-center gap-2 mb-8">
+      {steps.map((s, i) => (
+        <div key={s.n} className="contents">
+          <div className={`flex items-center gap-2 ${current >= s.n ? "text-leather-900" : "text-leather-400"}`}>
+            <div className={[
+              "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors",
+              current > s.n ? "bg-field-500 text-white" : current === s.n ? "bg-sun-400 text-leather-900" : "bg-sepia-200 text-leather-500",
+            ].join(" ")}>
+              {current > s.n ? (
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : s.n}
+            </div>
+            <span className={`text-sm font-medium hidden sm:block ${current >= s.n ? "text-leather-900" : "text-leather-400"}`}>
+              {s.label}
+            </span>
+          </div>
+          {i < steps.length - 1 && (
+            <div className={`flex-1 h-px transition-colors ${current > 1 ? "bg-field-400" : "bg-sepia-300"}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Paso 1: Datos de envío ───────────────────────────────────────────────── */
+
+type ShippingStepProps = {
+  form: ShippingInfo;
+  errors: Partial<Record<keyof ShippingInfo, string>>;
+  userEmail: string;
+  onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+};
+
+function ShippingStep({ form, errors, userEmail, onChange, onSubmit }: ShippingStepProps) {
+  return (
+    <form onSubmit={onSubmit} noValidate className="space-y-5">
+      <div className="grid sm:grid-cols-2 gap-4">
+        <FieldWrapper label="Nombre completo" htmlFor="name" error={errors.name}>
+          <input id="name" name="name" type="text" autoComplete="name"
+            value={form.name} onChange={onChange} placeholder="Juan Pérez"
+            className={inputClass} />
+        </FieldWrapper>
+        <FieldWrapper label="Teléfono / WhatsApp" htmlFor="phone" error={errors.phone}>
+          <input id="phone" name="phone" type="tel" autoComplete="tel"
+            value={form.phone ?? ""} onChange={onChange} placeholder="+54 9 11 1234-5678"
+            className={inputClass} />
+        </FieldWrapper>
+      </div>
+
+      <FieldWrapper label="Email" htmlFor="email" error={undefined}>
+        <input id="email" name="email" type="email" value={userEmail}
+          readOnly disabled className={`${inputClass} opacity-60 cursor-not-allowed`} />
+        <p className="mt-1 text-xs text-leather-500">El email se toma de tu cuenta</p>
+      </FieldWrapper>
+
+      <FieldWrapper label="Dirección (calle y número)" htmlFor="address" error={errors.address}>
+        <input id="address" name="address" type="text" autoComplete="street-address"
+          value={form.address} onChange={onChange} placeholder="Av. Corrientes 1234, Piso 3 Dto B"
+          className={inputClass} />
+      </FieldWrapper>
+
+      <div className="grid sm:grid-cols-3 gap-4">
+        <div className="sm:col-span-2">
+          <FieldWrapper label="Ciudad" htmlFor="city" error={errors.city}>
+            <input id="city" name="city" type="text" autoComplete="address-level2"
+              value={form.city} onChange={onChange} placeholder="Tucumán"
+              className={inputClass} />
+          </FieldWrapper>
+        </div>
+        <FieldWrapper label="Código Postal" htmlFor="postalCode" error={errors.postalCode}>
+          <input id="postalCode" name="postalCode" type="text" autoComplete="postal-code"
+            value={form.postalCode ?? ""} onChange={onChange} placeholder="4000"
+            className={inputClass} />
+        </FieldWrapper>
+      </div>
+
+      <FieldWrapper label="Provincia" htmlFor="province" error={errors.province}>
+        <select id="province" name="province" value={form.province ?? ""} onChange={onChange}
+          className={inputClass}>
+          <option value="">Seleccioná una provincia…</option>
+          {PROVINCES.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+      </FieldWrapper>
+
+      <div className="pt-2">
+        <Button type="submit" fullWidth size="lg">
+          Continuar al pago →
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/* ── Paso 2: Método de pago ───────────────────────────────────────────────── */
+
+function MpLogo({ className = "h-7 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src="/images/mercadopago-logo.png"
+      alt="Mercado Pago"
+      className={className}
+    />
+  );
+}
+
+function PaymentMethodCard({
+  selected, onClick, children,
+}: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "w-full text-left p-4 rounded-xl border-2 transition-all",
+        selected
+          ? "border-sun-500 bg-sun-50/60 shadow-sm"
+          : "border-sepia-300 bg-white hover:border-sepia-400",
+      ].join(" ")}
+    >
+      <div className="flex items-start gap-3">
+        <div className={[
+          "mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+          selected ? "border-sun-500" : "border-sepia-400",
+        ].join(" ")}>
+          {selected && <div className="w-2 h-2 rounded-full bg-sun-500" />}
+        </div>
+        {children}
+      </div>
+    </button>
+  );
+}
+
+type PaymentStepProps = {
+  paymentMethod: PaymentMethod;
+  onSelect: (m: PaymentMethod) => void;
+  isSubmitting: boolean;
+  createError: string | null;
+  onBack: () => void;
+  onSubmit: () => void;
+};
+
+function PaymentStep({
+  paymentMethod, onSelect, isSubmitting, createError, onBack, onSubmit,
+}: PaymentStepProps) {
+  return (
+    <div className="space-y-4">
+      {/* Mercado Pago */}
+      <PaymentMethodCard selected={paymentMethod === "mercadopago"} onClick={() => onSelect("mercadopago")}>
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <MpLogo />
+            <span className="font-semibold text-leather-900 text-sm">Mercado Pago</span>
+          </div>
+          <p className="text-xs text-leather-600 mb-3">
+            Pagá con tarjeta de crédito, débito, efectivo (Rapipago / PagoFácil) o saldo MP.
+            Hasta 12 cuotas sin interés con bancos seleccionados.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {["Visa", "Mastercard", "Amex", "Cabal", "Naranja", "Efectivo"].map((m) => (
+              <span key={m} className="text-[10px] font-medium bg-sepia-100 text-leather-700 px-2 py-0.5 rounded">
+                {m}
+              </span>
+            ))}
+          </div>
+          {paymentMethod === "mercadopago" && (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-field-600 font-medium">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              Pago 100% seguro · Tecnología SSL
+            </div>
+          )}
+        </div>
+      </PaymentMethodCard>
+
+      {/* Transferencia bancaria */}
+      <PaymentMethodCard selected={paymentMethod === "transfer"} onClick={() => onSelect("transfer")}>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <svg className="w-5 h-5 text-leather-700" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+            <span className="font-semibold text-leather-900 text-sm">Transferencia bancaria</span>
+          </div>
+          <p className="text-xs text-leather-600 mb-2">
+            10% de descuento pagando por transferencia. Te enviamos los datos al confirmar.
+          </p>
+          {paymentMethod === "transfer" && (
+            <div className="mt-3 bg-cream-100 border border-sepia-300 rounded-lg p-3 text-xs space-y-1.5 text-leather-800">
+              <div className="flex justify-between">
+                <span className="font-semibold text-leather-600">Titular</span>
+                <span>La Gauchada S.R.L.</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold text-leather-600">CBU</span>
+                <span className="font-mono tracking-wide">0110012030012345678901</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold text-leather-600">Alias</span>
+                <span className="font-mono">LAGAUCHADA.MP</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold text-leather-600">Banco</span>
+                <span>Banco Nación Argentina</span>
+              </div>
+              <p className="text-leather-500 pt-1 border-t border-sepia-200">
+                Enviá el comprobante a <strong>pagos@lagauchada.com.ar</strong>
+              </p>
+            </div>
+          )}
+        </div>
+      </PaymentMethodCard>
+
+      {createError && (
+        <p className="text-sm text-terracota-500 bg-terracota-50 border border-terracota-200 rounded-lg px-3 py-2" role="alert">
+          {createError}
+        </p>
+      )}
+
+      <div className="flex gap-3 pt-2">
+        <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
+          ← Volver
+        </Button>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={isSubmitting}
+          className={[
+            "flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold text-sm transition-all",
+            paymentMethod === "mercadopago"
+              ? "bg-[#009EE3] hover:bg-[#007EB5] text-white disabled:opacity-60"
+              : "bg-leather-900 hover:bg-leather-800 text-cream-50 disabled:opacity-60",
+          ].join(" ")}
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Procesando…
+            </>
+          ) : paymentMethod === "mercadopago" ? (
+            <>
+              <MpLogo className="h-5 w-auto brightness-0 invert" />
+              <span>Ir a pagar</span>
+            </>
+          ) : (
+            "Confirmar pedido →"
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Resumen del pedido (sidebar) ─────────────────────────────────────────── */
+
+function OrderSummary({
+  cartItems, total, totalUnits, paymentMethod, step,
+}: {
+  cartItems: ReturnType<typeof useCheckout>["cartItems"];
+  total: number;
+  totalUnits: number;
+  paymentMethod: PaymentMethod;
+  step: 1 | 2;
+}) {
+  const transferDiscount = paymentMethod === "transfer" ? Math.round(total * 0.1) : 0;
+  const finalTotal = total - transferDiscount;
+
+  return (
+    <div className="bg-white border border-sepia-300 rounded-xl shadow-warm-sm overflow-hidden">
+      <div className="p-5 border-b border-sepia-200">
+        <h2 className="font-display text-lg font-bold text-leather-900">
+          Resumen del pedido
+        </h2>
+        <p className="text-xs text-leather-500 mt-0.5">{totalUnits} {totalUnits === 1 ? "producto" : "productos"}</p>
+      </div>
+
+      {/* Items */}
+      <ul className="divide-y divide-sepia-100 px-5 max-h-64 overflow-y-auto">
+        {cartItems.map((item) => (
+          <li key={item.id} className="flex items-center gap-3 py-3">
+            <div className="relative shrink-0">
+              <img src={item.imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover border border-sepia-200" />
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-leather-700 text-cream-50 text-[10px] font-bold rounded-full flex items-center justify-center">
+                {item.quantity}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-leather-900 truncate">{item.name}</p>
+              <p className="text-xs text-leather-500">{formatPrice(item.price)} c/u</p>
+            </div>
+            <p className="text-sm font-semibold text-leather-900 tabular-nums shrink-0">
+              {formatPrice(item.price * item.quantity)}
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      {/* Totales */}
+      <div className="p-5 border-t border-sepia-200 space-y-2 text-sm">
+        <div className="flex justify-between text-leather-700">
+          <span>Subtotal</span>
+          <span className="font-medium">{formatPrice(total)}</span>
+        </div>
+        <div className="flex justify-between text-leather-700">
+          <span>Envío</span>
+          <span className="font-medium text-field-600">Gratis</span>
+        </div>
+        {transferDiscount > 0 && (
+          <div className="flex justify-between text-field-600">
+            <span>Descuento transferencia (10%)</span>
+            <span className="font-medium">- {formatPrice(transferDiscount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between pt-3 border-t border-sepia-300">
+          <span className="font-display text-base font-bold text-leather-900">Total</span>
+          <span className="font-display text-xl font-bold text-leather-900">
+            {formatPrice(finalTotal)}
+          </span>
+        </div>
+      </div>
+
+      {/* Badges de confianza */}
+      {step === 2 && (
+        <div className="px-5 pb-5 space-y-2">
+          {[
+            { icon: "🔒", text: "Pago seguro con cifrado SSL" },
+            { icon: "🔄", text: "Devolución gratis en 30 días" },
+            { icon: "📦", text: "Envío a todo el país" },
+          ].map((b) => (
+            <div key={b.text} className="flex items-center gap-2 text-xs text-leather-600">
+              <span>{b.icon}</span>
+              <span>{b.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Página principal ─────────────────────────────────────────────────────── */
 
 export default function CheckoutPage() {
   const {
-    cartItems,
-    total,
-    totalUnits,
-    form,
-    errors,
-    isSubmitting,
-    isFormInvalid,
-    createError,
-    handleChange,
-    handleSubmit,
+    cartItems, userEmail, total, totalUnits,
+    form, errors, step, paymentMethod, setPaymentMethod,
+    isSubmitting, createError,
+    handleChange, handleNextStep, handleBack, handleSubmit,
   } = useCheckout();
 
-  if (cartItems.length === 0) {
-    return <Navigate to="/cart" replace />;
-  }
+  if (cartItems.length === 0) return <Navigate to="/cart" replace />;
 
   return (
-    <Container size="lg" className="py-12">
-      <h1 className="font-display text-3xl font-bold text-leather-900 mb-2">
-        Finalizar compra
-      </h1>
-      <p className="text-sm text-leather-600 mb-6">
-        Completá los datos de envío para confirmar tu pedido
-      </p>
+    <main className="bg-cream-50/80 min-h-[calc(100vh-65px)] py-10">
+      <Container size="lg">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="font-display text-3xl font-bold text-leather-900 mb-1">
+            Finalizar compra
+          </h1>
+          <p className="text-sm text-leather-600">
+            {step === 1 ? "Completá tus datos de envío" : "Elegí cómo querés pagar"}
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-        <Card>
-          <h2 className="font-display text-xl font-bold text-leather-900 mb-4">
-            Datos de envío
-          </h2>
-          <form onSubmit={handleSubmit} noValidate>
-            <FormField
-              id="name"
-              name="name"
-              label="Nombre completo"
-              type="text"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Tu nombre y apellido"
-              autoComplete="name"
-              error={errors.name}
-            />
-            <FormField
-              id="address"
-              name="address"
-              label="Dirección"
-              type="text"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Calle y número"
-              autoComplete="street-address"
-              error={errors.address}
-            />
-            <FormField
-              id="city"
-              name="city"
-              label="Ciudad"
-              type="text"
-              value={form.city}
-              onChange={handleChange}
-              placeholder="Ciudad"
-              autoComplete="address-level2"
-              error={errors.city}
-            />
+        <StepIndicator current={step} />
 
-            {createError && (
-              <p
-                className="mb-4 text-sm text-terracota-500 bg-terracota-50 border border-terracota-200 rounded-lg px-3 py-2"
-                role="alert"
-              >
-                No pudimos crear la orden: {createError}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              fullWidth
-              disabled={isSubmitting || isFormInvalid}
-            >
-              {isSubmitting ? "Procesando..." : "Confirmar compra"}
-            </Button>
-            <p className="mt-3 text-xs text-leather-500 text-center">
-              Pago simulado · No se cobrará nada
-            </p>
-          </form>
-        </Card>
-
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <Card>
-            <h2 className="font-display text-xl font-bold text-leather-900 mb-4">
-              Resumen del pedido
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+          {/* Formulario */}
+          <div className="bg-white border border-sepia-300 rounded-xl shadow-warm-sm p-6">
+            <h2 className="font-display text-xl font-bold text-leather-900 mb-6">
+              {step === 1 ? "Datos de envío" : "Método de pago"}
             </h2>
-            <ul className="divide-y divide-sepia-300/60 mb-4 -mx-2">
-              {cartItems.map((item) => (
-                <li key={item.id} className="flex items-center gap-3 py-2 px-2">
-                  <img
-                    src={item.imageUrl}
-                    alt=""
-                    className="w-12 h-12 rounded-lg object-cover border border-sepia-300 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-leather-900 truncate">
-                      {item.name}
-                    </p>
-                    <p className="text-xs text-leather-600">
-                      {item.quantity} × {formatPrice(item.price)}
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium tabular-nums">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-leather-700">Productos</dt>
-                <dd className="font-medium text-leather-900">{totalUnits}</dd>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-sepia-300">
-                <dt className="text-leather-900 font-display text-base font-bold">
-                  Total
-                </dt>
-                <dd className="font-display text-xl font-bold text-leather-900">
-                  {formatPrice(total)}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-        </aside>
-      </div>
-    </Container>
+            {step === 1 ? (
+              <ShippingStep
+                form={form}
+                errors={errors}
+                userEmail={userEmail}
+                onChange={handleChange}
+                onSubmit={handleNextStep}
+              />
+            ) : (
+              <PaymentStep
+                paymentMethod={paymentMethod}
+                onSelect={setPaymentMethod}
+                isSubmitting={isSubmitting}
+                createError={createError}
+                onBack={handleBack}
+                onSubmit={handleSubmit}
+              />
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:sticky lg:top-24">
+            <OrderSummary
+              cartItems={cartItems}
+              total={total}
+              totalUnits={totalUnits}
+              paymentMethod={paymentMethod}
+              step={step}
+            />
+          </div>
+        </div>
+      </Container>
+    </main>
   );
 }
