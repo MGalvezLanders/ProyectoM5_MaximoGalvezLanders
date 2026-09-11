@@ -128,8 +128,19 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse,
 ) {
-  //* CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  //* CORS — restringido al dominio de producción y localhost para dev.
+  const ALLOWED_ORIGINS = new Set([
+    "https://proyecto-m5-maximo-galvez-landers.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:4173",
+  ]);
+  const origin = (req.headers.origin as string | undefined) ?? "";
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    ALLOWED_ORIGINS.has(origin)
+      ? origin
+      : "https://proyecto-m5-maximo-galvez-landers.vercel.app",
+  );
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Vary", "Origin");
