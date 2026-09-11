@@ -1,9 +1,10 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
+import { BestSellersSlider } from "@/components/home/BestSellersSlider";
 import { fadeUp, stagger, cardReveal } from "@/utils/animations";
 
 const features = [
@@ -20,6 +21,24 @@ const features = [
     body: "Despachamos en 24-48hs desde nuestro taller. Tracking incluido.",
   },
 ];
+
+function PromoVideo() {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+  return (
+    <section className="border-b border-sepia-300 bg-leather-900">
+      <video
+        src="/videos/promo.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        onError={() => setHidden(true)}
+        className="w-full max-h-[85vh] object-cover block"
+      />
+    </section>
+  );
+}
 
 const HomePage = () => {
   const heroRef = useRef<HTMLElement>(null);
@@ -85,6 +104,12 @@ const HomePage = () => {
           </motion.div>
         </Container>
       </section>
+
+      {/* ── Video promocional ─────────────────────────────────────────────── */}
+      <PromoVideo />
+
+      {/* ── Más Vendidos ──────────────────────────────────────────────────── */}
+      <BestSellersSlider />
 
       {/* ── Banda argentina animada ───────────────────────────────────────── */}
       <motion.div
