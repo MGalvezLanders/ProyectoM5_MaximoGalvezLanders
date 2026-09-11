@@ -7,7 +7,7 @@ export const createUserProfile = async (
   uid: string,
   data: UserProfile,
 ): Promise<void> => {
-  await setDoc(doc(db, "users", uid), data);
+  await setDoc(doc(db, "users", uid), data, { merge: true });
 };
 
 export const getUserProfile = async (
