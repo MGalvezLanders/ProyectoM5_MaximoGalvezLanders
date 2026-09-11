@@ -1,9 +1,5 @@
 export const formatPrice = (price: number): string =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(price);
+  new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(price);
 
 export const formatOrderDate = (date: unknown): string => {
   if (

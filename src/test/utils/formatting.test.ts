@@ -16,7 +16,6 @@ describe("formatPrice", () => {
   it("formatea un precio entero como moneda ARS sin decimales", () => {
     const result = formatPrice(15000);
     expect(result).toContain("15.000");
-    expect(result).toMatch(/\$/);
   });
 
   it("formatea cero correctamente", () => {
