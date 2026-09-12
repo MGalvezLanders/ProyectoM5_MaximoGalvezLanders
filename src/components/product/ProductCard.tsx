@@ -1,40 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/button/Button";
 import { useAddToCart } from "@/hooks/cart/useAddToCart";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { Product } from "@/types/product";
-import { cardReveal } from "@/utils/animations";
 import { formatPrice } from "@/utils/formatting";
+import { getProductRating } from "@/utils/reviews";
+import { StarRating } from "@/components/ui/StarRating";
 
 type ProductCardProps = {
   product: Product;
 };
 
-function CreditCardIcon() {
-  return (
-    <svg
-      width="26"
-      height="18"
-      viewBox="0 0 26 18"
-      fill="none"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <rect x="0.5" y="0.5" width="25" height="17" rx="2.5" stroke="currentColor" strokeWidth="1" />
-      <rect y="4" width="26" height="3" fill="currentColor" fillOpacity="0.15" />
-      <rect x="2.5" y="10" width="5" height="4" rx="1" stroke="currentColor" strokeWidth="0.75" />
-    </svg>
-  );
-}
-
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, justAdded } = useAddToCart();
+  const { isFavorite, toggle } = useFavorites();
+  const fav = isFavorite(product.id);
   const outOfStock = product.stock === 0;
+  const rating = getProductRating(product.id);
 
-  const transferPrice   = Math.round(product.price * 0.9);
-  const installmentPrice = Math.round((product.price * 1.1) / 6);
+  const handleFavClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle(product.id);
+  };
 
   // Construir array de imágenes con backward compat
   const images =
@@ -43,46 +33,27 @@ export function ProductCard({ product }: ProductCardProps) {
       : [product.imageUrl];
 
   const hasMultiple = images.length > 1;
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
-
-  const handleMouseEnter = () => {
-    if (!hasMultiple) return;
-    setCurrentIndex(1);
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
-  };
-
-  const handleMouseLeave = () => {
-    if (!hasMultiple) return;
-    clearInterval(intervalRef.current);
-    setCurrentIndex(0);
-  };
-
-  useEffect(() => {
-    return () => clearInterval(intervalRef.current);
-  }, []);
+  const [hovered, setHovered] = useState(false);
+  const currentIndex = hovered && hasMultiple ? 1 : 0;
 
   const handleAdd = () => addToCart(product);
 
   return (
-    <motion.article
-      variants={cardReveal}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-40px" }}
-      className="group bg-cream-50 border border-sepia-300 rounded-xl overflow-hidden shadow-warm-sm hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
+    <article
+      className="group bg-cream-50 border border-sepia-300 radius-card overflow-hidden shadow-warm-sm hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
     >
-      <Link to={`/products/${product.id}`} className="block">
+      <Link
+        to={`/products/${product.id}`}
+        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50 rounded-t-xl"
+      >
         <div
           className="aspect-square overflow-hidden bg-cream-100 relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
         >
           {hasMultiple ? (
             <>
-              {images.map((url, i) => (
+              {images.slice(0, 2).map((url, i) => (
                 <img
                   key={url}
                   src={url}
@@ -94,21 +65,6 @@ export function ProductCard({ product }: ProductCardProps) {
                   ].join(" ")}
                 />
               ))}
-
-              {/* Puntitos indicadores */}
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-                {images.map((_, i) => (
-                  <span
-                    key={i}
-                    className={[
-                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                      i === currentIndex
-                        ? "bg-cream-50 scale-125"
-                        : "bg-cream-50/50",
-                    ].join(" ")}
-                  />
-                ))}
-              </div>
             </>
           ) : (
             <img
@@ -118,6 +74,33 @@ export function ProductCard({ product }: ProductCardProps) {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           )}
+
+          {/* Chip de descuento por transferencia */}
+          {!outOfStock && (
+            <span className="absolute top-2 left-2 z-10 inline-flex items-center px-2 py-0.5 rounded-full bg-leather-900 text-sun-400 text-[10px] font-bold tracking-wide shadow-sm">
+              10% OFF transferencia
+            </span>
+          )}
+
+          {/* Favorito */}
+          <button
+            type="button"
+            onClick={handleFavClick}
+            aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
+            aria-pressed={fav}
+            className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-cream-50/85 backdrop-blur-sm hover:bg-cream-50 flex items-center justify-center shadow-sm transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-500/60"
+          >
+            <svg
+              className={`w-4 h-4 transition-colors ${fav ? "text-terracota-500" : "text-leather-500"}`}
+              viewBox="0 0 20 20"
+              fill={fav ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.6"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 17s-6-3.5-6-8a3.5 3.5 0 016-2.5A3.5 3.5 0 0116 9c0 4.5-6 8-6 8z" />
+            </svg>
+          </button>
 
           {outOfStock && (
             <div className="absolute inset-0 bg-leather-900/50 flex items-center justify-center z-20">
@@ -130,32 +113,29 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <div className="p-4 flex flex-col gap-2 flex-1">
-        <Link to={`/products/${product.id}`}>
-          <h3 className="font-display text-lg font-semibold text-leather-900 leading-tight line-clamp-2 hover:text-leather-700 transition-colors">
+        <Link
+          to={`/products/${product.id}`}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-500/50 rounded"
+        >
+          <h3 className="font-display text-base sm:text-lg font-semibold text-leather-900 leading-tight line-clamp-2 hover:text-leather-700 transition-colors">
             {product.name}
           </h3>
         </Link>
 
-        <div className="pt-2 border-t border-sepia-300/60 mt-auto space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <StarRating value={rating.average} size={12} />
+          <span className="text-[11px] text-leather-500">
+            {rating.average.toFixed(1)} ({rating.count})
+          </span>
+        </div>
+
+        <div className="mt-auto pt-2 border-t border-sepia-300/60">
           <span className="block font-display text-xl font-bold text-leather-900">
             {formatPrice(product.price)}
           </span>
-
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="font-display text-base font-bold text-field-500">
-              {formatPrice(transferPrice)}
-            </span>
-            <span className="text-xs text-leather-500 leading-tight">
-              pagando con transferencia
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-leather-600">
-            <span className="text-xs font-medium">
-              6 x {formatPrice(installmentPrice)} pagando con
-            </span>
-            <CreditCardIcon />
-          </div>
+          <span className="text-[11px] text-leather-500">
+            o 6 cuotas sin interés
+          </span>
         </div>
 
         <Button
@@ -165,9 +145,9 @@ export function ProductCard({ product }: ProductCardProps) {
           onClick={handleAdd}
           className="mt-1"
         >
-          {justAdded ? "Agregado" : "Agregar"}
+          {justAdded ? "Agregado" : "Agregar al carrito"}
         </Button>
       </div>
-    </motion.article>
+    </article>
   );
 }
