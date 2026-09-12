@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/button/Button";
+import { useFavorites } from "@/hooks/useFavorites";
 import { CartBadge } from "./CartBadge";
 import type { UserProfile } from "@/types/auth";
 import type { User } from "firebase/auth";
@@ -37,6 +38,17 @@ export function NavbarMobileMenu({
   onRegister,
 }: NavbarMobileMenuProps) {
   const [productsOpen, setProductsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+  const { count: favCount } = useFavorites();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate(`/catalog?q=${encodeURIComponent(q)}`);
+    setQuery("");
+  };
 
   return (
     <div
@@ -47,6 +59,24 @@ export function NavbarMobileMenu({
       ].join(" ")}
     >
       <div className="px-4 py-3 flex flex-col gap-1">
+        {/* Buscador global */}
+        <form onSubmit={handleSubmit} className="mb-2">
+          <div className="relative">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar productos..."
+              aria-label="Buscar productos"
+              className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-cream-50 text-leather-900 placeholder-leather-500/60 border border-sepia-400 text-sm focus:outline-none focus:ring-2 focus:ring-sun-500/50 focus:border-sun-500"
+            />
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-leather-500 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+            </svg>
+          </div>
+        </form>
+
         {user && (
           <div className="px-3 py-2 mb-1 border-b border-sepia-300/60">
             <p className="text-xs uppercase tracking-wider text-leather-500">
@@ -108,6 +138,15 @@ export function NavbarMobileMenu({
             </div>
           </div>
         </div>
+
+        <NavLink to="/favorites" className={linkClass}>
+          Favoritos
+          {favCount > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full bg-terracota-500 text-cream-50">
+              {favCount}
+            </span>
+          )}
+        </NavLink>
 
         {user && (
           <>
