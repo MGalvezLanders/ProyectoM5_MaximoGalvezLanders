@@ -6,6 +6,8 @@ import { useCart } from "@/hooks/cart/useCart";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { formatPrice } from "@/utils/formatting";
 
+const FREE_SHIPPING_THRESHOLD = 30_000;
+
 /**
  * Panel lateral (slide-in desde la izquierda) que muestra el carrito completo
  * cada vez que el usuario agrega un producto. Resalta el ítem recién sumado y
@@ -37,6 +39,10 @@ export function CartDrawer() {
   const items = state.items;
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
+  const freeShippingUnlocked = total >= FREE_SHIPPING_THRESHOLD;
+  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
+  const progressPct = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100);
 
   const handleGoToCart = () => {
     closeDrawer();
@@ -188,6 +194,30 @@ export function CartDrawer() {
             {/* Footer con subtotal + acciones */}
             {items.length > 0 && (
               <footer className="border-t border-sepia-300 px-5 py-4 bg-cream-100 space-y-3">
+                {/* Barra envío gratis */}
+                <div className="text-xs">
+                  {freeShippingUnlocked ? (
+                    <p className="flex items-center gap-1.5 text-field-600 font-semibold">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Envío gratis desbloqueado
+                    </p>
+                  ) : (
+                    <p className="text-leather-700">
+                      Sumá <span className="font-semibold text-leather-900">{formatPrice(remaining)}</span> más para envío gratis
+                    </p>
+                  )}
+                  <div className="mt-1.5 h-1 bg-sepia-200 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-gradient-to-r from-sun-500 to-field-500 rounded-full"
+                    />
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm uppercase tracking-wider font-medium text-leather-600">
                     Subtotal
