@@ -38,12 +38,10 @@ export interface CatalogFiltersProps {
   category: string | undefined;
   priceRange: PriceRange | undefined;
   onlyInStock: boolean;
-  sortBy: SortBy;
   onGroupChange: (g: string | undefined) => void;
   onCategoryChange: (c: string | undefined) => void;
   onPriceRangeChange: (p: PriceRange | undefined) => void;
   onInStockChange: (v: boolean) => void;
-  onSortChange: (s: SortBy) => void;
   onClear: () => void;
   hasActiveFilters: boolean;
 }
@@ -76,6 +74,7 @@ function Chip({
       disabled={disabled}
       className={[
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sun-500/50 focus-visible:ring-offset-1 focus-visible:ring-offset-cream-50",
         disabled
           ? "opacity-50 cursor-not-allowed bg-cream-50 text-leather-400 border-sepia-200"
           : active
@@ -110,23 +109,16 @@ export function CatalogFilters({
   category,
   priceRange,
   onlyInStock,
-  sortBy,
   onGroupChange,
   onCategoryChange,
   onPriceRangeChange,
   onInStockChange,
-  onSortChange,
   onClear,
   hasActiveFilters,
 }: CatalogFiltersProps) {
   const handleGroupClick = (val: string) => {
-    if (group === val) {
-      onGroupChange(undefined);
-      onCategoryChange(undefined);
-    } else {
-      onGroupChange(val);
-      onCategoryChange(undefined);
-    }
+    // Una sola llamada — el setter del padre limpia category cuando cambia el grupo.
+    onGroupChange(group === val ? undefined : val);
   };
 
   return (
@@ -136,7 +128,7 @@ export function CatalogFilters({
         <Chip
           label="Todos"
           active={!group}
-          onClick={() => { onGroupChange(undefined); onCategoryChange(undefined); }}
+          onClick={() => onGroupChange(undefined)}
         />
         {CATEGORY_GROUPS.map((g) => (
           <Chip
@@ -194,21 +186,6 @@ export function CatalogFilters({
           label="Solo en stock"
           active={onlyInStock}
           onClick={() => onInStockChange(!onlyInStock)}
-        />
-        <Chip
-          label="Menor precio"
-          active={sortBy === "price-asc"}
-          onClick={() => onSortChange(sortBy === "price-asc" ? "default" : "price-asc")}
-        />
-        <Chip
-          label="Mayor precio"
-          active={sortBy === "price-desc"}
-          onClick={() => onSortChange(sortBy === "price-desc" ? "default" : "price-desc")}
-        />
-        <Chip
-          label="Más nuevos"
-          active={sortBy === "newest"}
-          onClick={() => onSortChange(sortBy === "newest" ? "default" : "newest")}
         />
         <Chip
           label="En oferta"
