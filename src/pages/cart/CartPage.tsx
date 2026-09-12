@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Container } from "@/components/ui/Container";
@@ -6,12 +7,17 @@ import { Button } from "@/components/button/Button";
 import { QuantityInput } from "@/components/ui/QuantityInput";
 import { SolDeMayo } from "@/components/ui/SolDeMayo";
 import { useCart } from "@/hooks/cart/useCart";
+import { useBestSellers } from "@/hooks/products/useBestSellers";
 import { BackButton } from "@/components/button/BackButton";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { fadeUp, stagger } from "@/utils/animations";
 import { formatPrice } from "@/utils/formatting";
 
+const FREE_SHIPPING_THRESHOLD = 30_000;
+
 export default function CartPage() {
   const { state, updateQuantity, removeItem, clear, error } = useCart();
+  const { products: bestSellers } = useBestSellers();
   const navigate = useNavigate();
   const { items } = state;
 
@@ -20,6 +26,16 @@ export default function CartPage() {
     0,
   );
   const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
+
+  const cartIds = useMemo(() => new Set(items.map((i) => i.id)), [items]);
+  const recommendations = useMemo(
+    () => bestSellers.filter((p) => !cartIds.has(p.id)).slice(0, 4),
+    [bestSellers, cartIds],
+  );
+
+  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
+  const freeShippingUnlocked = total >= FREE_SHIPPING_THRESHOLD;
+  const progressPct = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100);
 
   if (items.length === 0) {
     return (
@@ -168,8 +184,40 @@ export default function CartPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="lg:sticky lg:top-24 lg:self-start"
+          className="lg:sticky lg:top-24 lg:self-start space-y-3"
         >
+          {/* Barra de progreso envío gratis */}
+          <div className="bg-cream-50 border border-sepia-300 rounded-xl p-4">
+            {freeShippingUnlocked ? (
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-field-500/15 text-field-600 flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-leather-900">¡Envío gratis desbloqueado!</p>
+                  <p className="text-xs text-leather-600 mt-0.5">Te lo mandamos sin cargo a cualquier provincia.</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-leather-700 mb-2">
+                  Sumá <span className="font-display font-bold text-leather-900">{formatPrice(remaining)}</span> más y{" "}
+                  <span className="font-semibold text-field-600">el envío es gratis</span>.
+                </p>
+                <div className="h-1.5 bg-sepia-200 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPct}%` }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full bg-gradient-to-r from-sun-500 to-field-500 rounded-full"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
           <Card>
             <h2 className="font-display text-xl font-bold text-leather-900 mb-4">
               Resumen
@@ -206,6 +254,51 @@ export default function CartPage() {
             </button>
           </Card>
         </motion.aside>
+      </div>
+
+      {/* Recomendaciones */}
+      {recommendations.length > 0 && (
+        <section className="mt-14">
+          <div className="mb-5 flex items-baseline justify-between gap-4">
+            <h2 className="font-display text-2xl font-bold text-leather-900">
+              También te puede interesar
+            </h2>
+            <Link to="/catalog" className="text-sm text-leather-600 hover:text-leather-900 underline underline-offset-2 shrink-0">
+              Ver más
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {recommendations.map((p) => (
+              <Link
+                key={p.id}
+                to={`/products/${p.id}`}
+                className="group block bg-cream-50 border border-sepia-300 rounded-lg overflow-hidden hover:shadow-warm-sm hover:-translate-y-0.5 transition-all"
+              >
+                <div className="aspect-square bg-cream-100 overflow-hidden">
+                  <img
+                    src={p.imageUrl}
+                    alt={p.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-3">
+                  <p className="text-sm font-medium text-leather-800 line-clamp-1 leading-tight">
+                    {p.name}
+                  </p>
+                  <p className="text-sm font-display font-bold text-leather-900 mt-1">
+                    {formatPrice(p.price)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Vistos recientemente */}
+      <div className="mt-14">
+        <RecentlyViewed />
       </div>
     </Container>
   );
