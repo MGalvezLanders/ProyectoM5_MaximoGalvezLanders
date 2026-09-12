@@ -1,36 +1,62 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,30;0,9..144,400..700,50;1,9..144,400..700,30&family=Mona+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 @theme {
-  /* Paleta: cuero rústico + acentos patrios */
+  /* ── Paleta: cuero rústico + acentos patrios + neutros fríos ───────── */
+
+  /* Cream / sepia — fondos cálidos */
   --color-cream-50:  #FAF6EF;   /* fondo papel */
   --color-cream-100: #F5EFE2;   /* superficies suaves */
   --color-cream-200: #EBE0C8;   /* superficies hover */
   --color-sepia-300: #D6C7A8;   /* bordes */
   --color-sepia-400: #B89F73;   /* bordes fuertes */
 
+  /* Leather — marrón cuero, escala completa */
+  --color-leather-100: #E6D5C2; /* tono muy claro */
+  --color-leather-200: #D2B896;
+  --color-leather-300: #B8956A;
+  --color-leather-400: #A07548;
   --color-leather-500: #8B5A2B; /* marrón cuero medio */
   --color-leather-600: #6B4423; /* primario */
   --color-leather-700: #4E3119; /* hover primario */
+  --color-leather-800: #402714;
   --color-leather-900: #3D2817; /* texto principal */
 
-  --color-sky-arg-300: #B5D4EE; /* celeste claro */
-  --color-sky-arg-500: #74ACDF; /* celeste argentino */
-  --color-sky-arg-700: #3D7AB5; /* hover celeste */
+  /* Stone — neutros fríos para textos secundarios / bordes técnicos */
+  --color-stone-50:  #FAFAF9;
+  --color-stone-100: #F1F0EE;
+  --color-stone-200: #E1DED9;
+  --color-stone-300: #C8C4BC;
+  --color-stone-400: #A29C90;
+  --color-stone-500: #78716C;
+  --color-stone-600: #5A544D;
+  --color-stone-700: #44403C;
+  --color-stone-800: #2E2A26;
+  --color-stone-900: #1C1917;
 
+  /* Acentos patrios */
+  --color-sky-arg-300: #B5D4EE;
+  --color-sky-arg-500: #74ACDF;
+  --color-sky-arg-700: #3D7AB5;
+
+  /* Sol — escala HSL más disciplinada (mismo hue, luminosidad decreciente) */
+  --color-sun-200: #FCE7B8;     /* dorado luminoso (manteca) — títulos sobre dark */
+  --color-sun-300: #F8D89A;     /* dorado claro */
   --color-sun-400: #F4C56E;     /* sol claro */
   --color-sun-500: #E8A93C;     /* sol de mayo */
-  --color-sun-600: #C68A20;     /* hover sol */
+  --color-sun-600: #D18F1F;     /* hover — mismo hue */
+  --color-sun-700: #A87317;
 
   --color-terracota-500: #C84B2E; /* error/destructivo */
   --color-field-500: #7A8F4E;     /* éxito */
+  --color-field-600: #647540;
 
-  /* Tipografías */
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* ── Tipografías ─────────────────────────────────────────────────── */
+  --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+  --font-sans: "Mona Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Sombras cálidas */
+  /* ── Sombras cálidas ─────────────────────────────────────────────── */
   --shadow-warm-sm: 0 1px 2px 0 rgb(61 40 23 / 0.08);
   --shadow-warm: 0 4px 12px -2px rgb(61 40 23 / 0.12), 0 2px 4px -2px rgb(61 40 23 / 0.06);
   --shadow-warm-lg: 0 12px 28px -6px rgb(61 40 23 / 0.18), 0 4px 8px -4px rgb(61 40 23 / 0.08);
@@ -46,11 +72,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Fraunces con opsz + SOFT — cada tamaño ajusta óptico automáticamente.
+   NO seteamos `color` acá: dejamos que las utilities de Tailwind (text-*)
+   ganen sin fight de specificity. */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  color: var(--color-leather-900);
-  letter-spacing: -0.01em;
+  font-variation-settings: "SOFT" 30;
 }
+
+/* Tracking diferenciado por tamaño (jerarquía tipográfica correcta) */
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.02em; }
+h3 { letter-spacing: -0.015em; }
+h4 { letter-spacing: -0.01em; }
 
 /* Selección de texto en tono cálido */
 ::selection {
@@ -62,6 +96,20 @@ h1, h2, h3, h4 {
 * {
   scrollbar-color: var(--color-sepia-400) var(--color-cream-100);
   scrollbar-width: thin;
+}
+
+/* Links con subrayado tipográfico premium (offset + thickness) */
+a[data-underline="true"],
+.link-fancy {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+  transition: text-decoration-color 0.15s ease;
+}
+a[data-underline="true"]:hover,
+.link-fancy:hover {
+  text-decoration-color: currentColor;
 }
 
 /* ── Utilities decorativas ──────────────────────────────────────────────── */
@@ -77,9 +125,24 @@ h1, h2, h3, h4 {
   );
 }
 
+/* Textura papel más pronunciada + noise sutil */
 @utility paper-texture {
   background-color: var(--color-cream-50);
   background-image:
-    radial-gradient(circle at 20% 30%, rgb(107 68 35 / 0.025) 0, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgb(107 68 35 / 0.025) 0, transparent 50%);
+    radial-gradient(circle at 15% 25%, rgb(107 68 35 / 0.05) 0, transparent 45%),
+    radial-gradient(circle at 85% 70%, rgb(107 68 35 / 0.045) 0, transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.24  0 0 0 0 0.16  0 0 0 0 0.09  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: auto, auto, 240px 240px;
 }
+
+/* Costura dashed — sutil, evoca pespunte de cuero */
+@utility seam-border {
+  border-style: dashed;
+  border-width: 1px;
+  border-color: color-mix(in oklab, var(--color-sepia-400) 70%, transparent);
+}
+
+/* Radios estandarizados en 3 roles */
+@utility radius-ui { border-radius: 6px; }
+@utility radius-card { border-radius: 12px; }
+@utility radius-modal { border-radius: 20px; }
