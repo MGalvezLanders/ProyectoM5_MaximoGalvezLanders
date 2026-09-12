@@ -10,7 +10,7 @@ export function Card({ children, padded = true, className = "", ...rest }: CardP
     <div
       {...rest}
       className={[
-        "bg-cream-50 border border-sepia-300 rounded-xl shadow-warm-sm",
+        "bg-cream-50 border border-sepia-300 radius-card shadow-warm-sm",
         padded ? "p-6" : "",
         className,
       ].join(" ")}
