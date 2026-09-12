@@ -13,8 +13,6 @@ const slideVariants = {
   exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
 };
 
-const MEDALS = ["🥇", "🥈", "🥉"];
-
 function SkeletonCard() {
   return (
     <div className="bg-sepia-200 rounded-xl overflow-hidden animate-pulse">
@@ -55,29 +53,35 @@ export function BestSellersSlider() {
   const current = pages[page] ?? [];
 
   return (
-    <section className="bg-cream-50 py-20 overflow-hidden">
+    <section className="bg-cream-50 py-24 sm:py-28 overflow-hidden">
       <Container size="xl">
-        {/* Encabezado */}
+        {/* Encabezado asimétrico — sin rayitas decorativas */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-12"
+          className="mb-12 flex items-end justify-between gap-6 flex-wrap"
         >
-          <div className="flex items-center justify-center gap-4 mb-3">
-            <div className="h-px flex-1 bg-sun-500/40 max-w-24" />
-            <span className="text-sun-600 text-xs font-bold tracking-[0.2em] uppercase">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-leather-600 mb-3">
+              <span className="w-6 h-px bg-leather-400" />
               Lo más elegido
             </span>
-            <div className="h-px flex-1 bg-sun-500/40 max-w-24" />
+            <h2 className="font-display text-3xl sm:text-5xl font-semibold text-leather-900 leading-[1.05]">
+              Más vendidos
+            </h2>
+            <p className="text-stone-500 text-sm mt-2">
+              Los favoritos de nuestra comunidad
+            </p>
           </div>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-leather-900 mb-2">
-            Más Vendidos
-          </h2>
-          <p className="text-leather-600 text-sm">
-            Los favoritos de nuestra comunidad
-          </p>
+          <Link
+            to="/catalog"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-leather-700 hover:text-leather-900 link-fancy"
+            data-underline="true"
+          >
+            Ver todo →
+          </Link>
         </motion.div>
 
         {/* Slider */}
@@ -100,19 +104,9 @@ export function BestSellersSlider() {
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="grid grid-cols-2 sm:grid-cols-4 gap-4"
               >
-                {current.map((product, i) => {
-                  const rank = page * 4 + i + 1;
-                  return (
-                    <div key={product.id} className="relative">
-                      {/* Badge de ranking */}
-                      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-leather-900/80 backdrop-blur-sm text-sun-400 text-xs font-bold px-2 py-0.5 rounded-full border border-sun-500/30">
-                        {rank <= 3 ? MEDALS[rank - 1] : null}
-                        <span>#{rank}</span>
-                      </div>
-                      <ProductCard product={product} />
-                    </div>
-                  );
-                })}
+                {current.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
               </motion.div>
             </AnimatePresence>
           )}
@@ -157,16 +151,6 @@ export function BestSellersSlider() {
           </div>
         )}
 
-        {/* CTA */}
-        <div className="text-center mt-10">
-          <Link
-            to="/catalog"
-            className="inline-flex items-center gap-2 text-sun-600 hover:text-sun-700 font-semibold text-sm transition-colors group"
-          >
-            Ver catálogo completo
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </Link>
-        </div>
       </Container>
     </section>
   );
