@@ -1,5 +1,6 @@
-import type { ChangeEvent, FormEvent } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/button/Button";
 import { useCheckout } from "@/hooks/useCheckout";
@@ -96,7 +97,15 @@ function ShippingStep({ form, errors, userEmail, onChange, onSubmit }: ShippingS
       <FieldWrapper label="Email" htmlFor="email" error={undefined}>
         <input id="email" name="email" type="email" value={userEmail}
           readOnly disabled className={`${inputClass} opacity-60 cursor-not-allowed`} />
-        <p className="mt-1 text-xs text-leather-500">El email se toma de tu cuenta</p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="text-xs text-leather-500">El email se toma de tu cuenta</p>
+          <Link
+            to="/profile"
+            className="text-xs text-leather-700 hover:text-leather-900 underline underline-offset-2 shrink-0"
+          >
+            Cambiar cuenta
+          </Link>
+        </div>
       </FieldWrapper>
 
       <FieldWrapper label="Dirección (calle y número)" htmlFor="address" error={errors.address}>
@@ -374,18 +383,114 @@ function OrderSummary({
       {step === 2 && (
         <div className="px-5 pb-5 space-y-2">
           {[
-            { icon: "🔒", text: "Pago seguro con cifrado SSL" },
-            { icon: "🔄", text: "Devolución gratis en 30 días" },
-            { icon: "📦", text: "Envío a todo el país" },
+            {
+              text: "Pago seguro con cifrado SSL",
+              svg: (
+                <svg className="w-4 h-4 text-field-600" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="4" y="9" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+            },
+            {
+              text: "Devolución gratis en 30 días",
+              svg: (
+                <svg className="w-4 h-4 text-field-600" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M3 10a7 7 0 1114 0 7 7 0 01-14 0z" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M10 6v4l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+            },
+            {
+              text: "Envío a todo el país",
+              svg: (
+                <svg className="w-4 h-4 text-field-600" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M2 14V7h9v7M11 9h4l2 3v2h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="5.5" cy="15.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+                  <circle cx="14.5" cy="15.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+                </svg>
+              ),
+            },
           ].map((b) => (
             <div key={b.text} className="flex items-center gap-2 text-xs text-leather-600">
-              <span>{b.icon}</span>
+              {b.svg}
               <span>{b.text}</span>
             </div>
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+/* ── Modal de confirmación para transferencia ─────────────────────────────── */
+
+function ConfirmTransferModal({
+  total, isSubmitting, onCancel, onConfirm,
+}: {
+  total: number;
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-leather-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-transfer-title"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md bg-cream-50 rounded-2xl shadow-warm-lg border border-sepia-300 p-6"
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-sun-400/20 text-sun-700 flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 3v7M10 14v.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </div>
+          <div>
+            <h3 id="confirm-transfer-title" className="font-display text-lg font-bold text-leather-900">
+              Confirmar pedido por transferencia
+            </h3>
+            <p className="text-sm text-leather-700 mt-1">
+              Vamos a reservar tu pedido por 48hs esperando el comprobante.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-cream-100 border border-sepia-300 rounded-lg p-3 mb-5 text-sm">
+          <div className="flex justify-between mb-1">
+            <span className="text-leather-600">Total a transferir</span>
+            <span className="font-display text-lg font-bold text-leather-900">
+              {formatPrice(total)}
+            </span>
+          </div>
+          <p className="text-xs text-leather-500">
+            Incluye 10% de descuento por transferencia. Después de confirmar te mostramos los datos bancarios y el email para enviar el comprobante.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onCancel} disabled={isSubmitting} className="flex-1">
+            Volver
+          </Button>
+          <Button onClick={onConfirm} disabled={isSubmitting} className="flex-1">
+            {isSubmitting ? "Procesando…" : "Confirmar pedido"}
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -399,7 +504,21 @@ export default function CheckoutPage() {
     handleChange, handleNextStep, handleBack, handleSubmit,
   } = useCheckout();
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   if (cartItems.length === 0) return <Navigate to="/cart" replace />;
+
+  const finalTotal = paymentMethod === "transfer" ? Math.round(total * 0.9) : total;
+
+  const handlePayClick = () => {
+    if (paymentMethod === "transfer") setConfirmOpen(true);
+    else handleSubmit();
+  };
+
+  const handleConfirmedSubmit = () => {
+    setConfirmOpen(false);
+    handleSubmit();
+  };
 
   return (
     <main className="bg-cream-50/80 min-h-[calc(100vh-65px)] py-10">
@@ -437,7 +556,7 @@ export default function CheckoutPage() {
                 isSubmitting={isSubmitting}
                 createError={createError}
                 onBack={handleBack}
-                onSubmit={handleSubmit}
+                onSubmit={handlePayClick}
               />
             )}
           </div>
@@ -454,6 +573,17 @@ export default function CheckoutPage() {
           </div>
         </div>
       </Container>
+
+      <AnimatePresence>
+        {confirmOpen && (
+          <ConfirmTransferModal
+            total={finalTotal}
+            isSubmitting={isSubmitting}
+            onCancel={() => setConfirmOpen(false)}
+            onConfirm={handleConfirmedSubmit}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }
