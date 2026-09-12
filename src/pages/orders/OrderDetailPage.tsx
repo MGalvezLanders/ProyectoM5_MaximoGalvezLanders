@@ -6,7 +6,103 @@ import { useFirestoreError } from "@/hooks/errors/useFirestoreError";
 import { getOrderById } from "@/services/order/orders.service";
 import { formatPrice, formatOrderDate } from "@/utils/formatting";
 import { STATUS_LABELS, STATUS_TONES } from "@/utils/order/orderStatus";
-import type { Order } from "@/types/order";
+import type { Order, OrderStatus } from "@/types/order";
+
+const TIMELINE_STEPS: { id: OrderStatus; label: string; description: string }[] = [
+  { id: "pending",    label: "Pedido recibido", description: "Confirmamos tu compra" },
+  { id: "processing", label: "En preparación",  description: "Estamos armando tu pedido" },
+  { id: "completed",  label: "Entregado",       description: "Llegó a destino" },
+];
+
+function OrderTimeline({ status }: { status: OrderStatus }) {
+  const isCancelled = status === "cancelled";
+  const activeIndex = isCancelled
+    ? -1
+    : TIMELINE_STEPS.findIndex((s) => s.id === status);
+
+  if (isCancelled) {
+    return (
+      <div className="bg-terracota-50 border border-terracota-200 rounded-2xl p-5 flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-terracota-500/15 text-terracota-500 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div>
+          <p className="font-display font-semibold text-leather-900">Pedido cancelado</p>
+          <p className="text-sm text-leather-700 mt-1">
+            Este pedido fue cancelado. Si tenés dudas, contactanos.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-cream-50 border border-sepia-300 rounded-2xl p-5">
+      <div className="flex items-start justify-between gap-2 sm:gap-4">
+        {TIMELINE_STEPS.map((step, i) => {
+          const done   = i < activeIndex;
+          const active = i === activeIndex;
+          const upcoming = i > activeIndex;
+          return (
+            <div key={step.id} className="contents">
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <div
+                  className={[
+                    "relative w-9 h-9 rounded-full flex items-center justify-center transition-all shrink-0",
+                    done
+                      ? "bg-field-500 text-white"
+                      : active
+                        ? "bg-sun-500 text-leather-900 ring-4 ring-sun-500/20"
+                        : "bg-sepia-200 text-leather-400",
+                  ].join(" ")}
+                >
+                  {done ? (
+                    <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <span className="text-xs font-bold">{i + 1}</span>
+                  )}
+                  {active && (
+                    <span className="absolute inset-0 rounded-full bg-sun-500/40 animate-ping" aria-hidden="true" />
+                  )}
+                </div>
+                <div className="text-center">
+                  <p
+                    className={[
+                      "font-display font-semibold text-xs sm:text-sm leading-tight",
+                      upcoming ? "text-leather-400" : "text-leather-900",
+                    ].join(" ")}
+                  >
+                    {step.label}
+                  </p>
+                  <p
+                    className={[
+                      "text-[10px] sm:text-xs mt-0.5 leading-tight hidden sm:block",
+                      upcoming ? "text-leather-400" : "text-leather-600",
+                    ].join(" ")}
+                  >
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+              {i < TIMELINE_STEPS.length - 1 && (
+                <div
+                  className={[
+                    "h-0.5 flex-1 mt-4 rounded-full transition-colors",
+                    i < activeIndex ? "bg-field-500" : "bg-sepia-300",
+                  ].join(" ")}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -103,6 +199,10 @@ export default function OrderDetailPage() {
         <Badge tone={STATUS_TONES[order.status]}>
           {STATUS_LABELS[order.status]}
         </Badge>
+      </div>
+
+      <div className="mb-6">
+        <OrderTimeline status={order.status} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
