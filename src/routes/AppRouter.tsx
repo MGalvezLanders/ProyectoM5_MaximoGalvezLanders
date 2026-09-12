@@ -21,6 +21,7 @@ const CheckoutPage        = lazy(() => import("@/pages/cart/CheckoutPage"));
 const OrdersPage          = lazy(() => import("@/pages/orders/OrdersPage"));
 const OrderDetailPage     = lazy(() => import("@/pages/orders/OrderDetailPage"));
 const NotFoundPage        = lazy(() => import("@/pages/notFound/NotFoundPage"));
+const FavoritesPage       = lazy(() => import("@/pages/favorites/FavoritesPage"));
 const AdminPage           = lazy(() => import("@/pages/admin/AdminPage"));
 const AdminProductsPage   = lazy(() => import("@/pages/admin/AdminProductsPage"));
 const AdminProductFormPage = lazy(() => import("@/pages/admin/AdminProductFormPage"));
@@ -98,6 +99,7 @@ function AnimatedRoutes() {
               }
             />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
 
             {/* Protegidas: requieren usuario logueado */}
             <Route element={<ProtectedRoute />}>

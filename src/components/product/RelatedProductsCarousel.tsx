@@ -39,7 +39,7 @@ export function RelatedProductsCarousel({
     >
       <div className="flex items-end justify-between mb-6">
         <div>
-          <span className="block text-xs font-semibold tracking-widest uppercase text-sky-arg-700 mb-1 capitalize">
+          <span className="block text-xs font-semibold tracking-widest uppercase text-sun-700 mb-1 capitalize">
             {sectionLabel}
           </span>
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-leather-900">
